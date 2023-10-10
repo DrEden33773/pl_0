@@ -2,6 +2,7 @@ use self::token_def::Token;
 use std::{iter::Peekable, process::exit, str::Chars};
 
 pub mod methods;
+pub mod prelude;
 pub mod token_def;
 
 pub trait LexerIterator {
@@ -49,7 +50,7 @@ impl<'a> LexerIterator for Lexer<'a> {
 }
 
 impl<'a> Lexer<'a> {
-  fn panic(&self, message: &str) -> ! {
+  fn panic(&self, message: String) -> ! {
     println!("Error [Line {}] => {}", self.line_num, message);
     exit(-1)
   }
@@ -60,7 +61,7 @@ impl<'a> Lexer<'a> {
     if c.is_ascii() {
       c
     } else {
-      self.panic(format!("'{c}' is not an ASCII character").as_str())
+      self.panic(format!("'{c}' is not an ASCII character"))
     }
   }
 
@@ -105,7 +106,7 @@ impl<'a> Lexer<'a> {
   fn do_next(&mut self) -> Option<Token> {
     if let Some(c) = self.next_char() {
       match c {
-        ' ' | '\r' | '\n' | '\t' => {
+        c if c.is_whitespace() => {
           if matches!(c, '\n') {
             self.line_num += 1;
           }
@@ -128,11 +129,12 @@ impl<'a> Lexer<'a> {
             self.next_char();
             Some(Token::EqSign)
           }
-          _ => self.panic(format!("token '{}' is undefined, did you mean ':='?", c).as_str()),
+          _ => self.panic(format!("'{c}' is an undefined sign, did you mean ':='?")),
         },
         '0'..='9' => self.lexing_integer(c),
-        'a'..='z' | 'A'..='Z' | '_' => self.lexing_identifier(c),
-        _ => self.panic(format!("'{c}' is not an ASCII character").as_str()),
+        'a'..='z' | 'A'..='Z' => self.lexing_identifier(c),
+        c if !c.is_ascii() => self.panic(format!("'{c}' is not an ASCII character")),
+        _ => self.panic(format!("'{c}' is an unexpected character")),
       }
     } else {
       None

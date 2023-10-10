@@ -35,9 +35,7 @@ pub enum Token {
   /* Identifier */
   Identifier(String),
   /* constant values */
-  String(String),
   Integer(i64),
-  Float(f64),
   /* EOS */
   Eos,
 }

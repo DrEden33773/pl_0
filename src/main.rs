@@ -40,6 +40,13 @@ mod demo {
         b := 2;
         c := a + b;
         write(c);
+        var boolean := a = b;
+        boolean := a < b;
+        boolean := a > b; 
+        boolean := a <= b;
+        boolean := a >= b;
+        boolean := a <> b;
+        write(boolean);
       end.
     ";
     let token_list = Lexer::dbg_one_pass(ctx);

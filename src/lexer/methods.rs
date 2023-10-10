@@ -30,9 +30,11 @@ impl<'a> Lexer<'a> {
     let mut identifier = format!("{first}");
     loop {
       let c = self.peek_char();
-      if c.is_alphanumeric() || c == '_' {
+      if c.is_alphanumeric() {
         self.next_char();
         identifier.push(c);
+      } else if c == '_' {
+        self.panic("'_' is not supported for identifier declaration".to_string());
       } else {
         break;
       }
@@ -46,7 +48,10 @@ impl<'a> Lexer<'a> {
 
 impl<'a> Lexer<'a> {
   pub(super) fn lexing_integer(&mut self, first: char) -> Option<Token> {
-    let mut scanned = first.to_digit(10)? as i64;
+    let mut scanned = first
+      .to_digit(10)
+      .unwrap_or_else(|| self.panic(format!("'{first}' is not a digit")))
+      as i64;
     loop {
       let c = self.peek_char();
       if c.is_ascii_digit() {
