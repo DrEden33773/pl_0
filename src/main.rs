@@ -54,6 +54,7 @@ mod demo {
   }
 
   #[test]
+  #[should_panic]
   fn lexer_should_failed_demo() {
     let ctx = "
       program ChineseProgramming;

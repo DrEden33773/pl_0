@@ -4,7 +4,7 @@ pub trait ErrorTrait {
   fn error_type(&self) -> String;
   fn as_string(&self) -> String {
     format!(
-      "{} [Line {}] => {}",
+      "{} [Line {}] :: {}",
       self.error_type(),
       self.line(),
       self.info()

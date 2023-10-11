@@ -1,5 +1,8 @@
 use self::token_def::Token;
-use std::{iter::Peekable, process::exit, str::Chars};
+use std::{iter::Peekable, str::Chars};
+
+#[cfg(not(feature = "debug"))]
+use std::process::exit;
 
 pub mod methods;
 pub mod prelude;
@@ -16,6 +19,7 @@ pub struct Lexer<'a> {
   source: Peekable<Chars<'a>>,
   ahead: Option<Token>,
   line_num: usize,
+  col_num: usize,
 }
 
 impl<'a> Iterator for Lexer<'a> {
@@ -51,8 +55,15 @@ impl<'a> LexerIterator for Lexer<'a> {
 
 impl<'a> Lexer<'a> {
   fn panic(&self, message: String) -> ! {
-    println!("Error [Line {}] => {}", self.line_num, message);
-    exit(-1)
+    #[cfg(not(feature = "debug"))]
+    {
+      println!("Error [Line {}] :: {}", self.line_num, message);
+      exit(-1)
+    }
+    #[cfg(feature = "debug")]
+    {
+      panic!("Error [Line {}] :: {}", self.line_num, message)
+    }
   }
 }
 
@@ -148,6 +159,7 @@ impl<'a> Lexer<'a> {
       source: input.chars().peekable(),
       ahead: None,
       line_num: 1,
+      col_num: 1,
     }
   }
 }
