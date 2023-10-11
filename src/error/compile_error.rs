@@ -23,8 +23,39 @@ impl Display for CompileErrorType {
 #[derive(Debug, Clone)]
 pub struct CompileError {
   pub line: usize,
+  pub col: usize,
   pub info: String,
   pub error_type: CompileErrorType,
+}
+
+#[allow(dead_code)]
+impl CompileError {
+  pub fn lexical_error_template() -> Self {
+    Self {
+      line: 1,
+      col: 0,
+      info: String::new(),
+      error_type: CompileErrorType::LexicalError,
+    }
+  }
+
+  pub fn syntax_error_template() -> Self {
+    Self {
+      line: 1,
+      col: 0,
+      info: String::new(),
+      error_type: CompileErrorType::SyntaxError,
+    }
+  }
+
+  pub fn semantic_error_template() -> Self {
+    Self {
+      line: 1,
+      col: 0,
+      info: String::new(),
+      error_type: CompileErrorType::SemanticError,
+    }
+  }
 }
 
 impl Display for CompileError {
@@ -44,5 +75,9 @@ impl ErrorTrait for CompileError {
 
   fn error_type(&self) -> String {
     self.error_type.to_string()
+  }
+
+  fn col(&self) -> usize {
+    self.col
   }
 }

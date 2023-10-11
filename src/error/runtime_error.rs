@@ -14,6 +14,7 @@ impl Display for RuntimeErrorType {
 #[derive(Debug, Clone)]
 pub struct RuntimeError {
   pub line: usize,
+  pub col: usize,
   pub info: String,
   pub error_type: RuntimeErrorType,
 }
@@ -35,5 +36,9 @@ impl ErrorTrait for RuntimeError {
 
   fn error_type(&self) -> String {
     self.error_type.to_string()
+  }
+
+  fn col(&self) -> usize {
+    self.col
   }
 }
