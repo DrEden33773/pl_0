@@ -15,15 +15,16 @@ fn compile_from_file(src: &str) {
     .read_to_string(&mut string_buf)
     .unwrap();
   let token_list = Lexer::dbg_one_pass(&string_buf);
-  println!("TokenList: {:#?}", token_list);
+  println!("TokenList: {:?}", token_list);
 }
 
 #[allow(unused_variables)]
 fn main() {
   if let [_, source, ..] = &ARGS[..] {
     compile_from_file((PROJECT_ROOT.to_string() + source.as_str()).as_str());
+  } else {
+    println!("Usage: {} <source_path>", ARGS[0]);
   }
-  println!("Usage: {} <source_path>", ARGS[0]);
 }
 
 #[cfg(test)]
@@ -103,7 +104,7 @@ mod demo {
   fn malformed_char_demo() {
     Lexer::dbg_one_pass(
       "
-      program RussianProgramming;
+      program JapaneseProgramming;
       begin
         var こんにちは;
         こんにちは = 1;
