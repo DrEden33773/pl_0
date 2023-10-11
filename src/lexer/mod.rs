@@ -57,12 +57,18 @@ impl<'a> Lexer<'a> {
   fn panic(&self, message: String) -> ! {
     #[cfg(not(feature = "debug"))]
     {
-      println!("Error [Line {}] :: {}", self.line_num, message);
+      println!(
+        "Error[Line({}), Col({})] :: {}",
+        self.line_num, self.col_num, message
+      );
       exit(-1)
     }
     #[cfg(feature = "debug")]
     {
-      panic!("Error [Line {}] :: {}", self.line_num, message)
+      panic!(
+        "Error[Line({}), Col({})] :: {}",
+        self.line_num, self.col_num, message
+      )
     }
   }
 }
@@ -78,7 +84,7 @@ impl<'a> Lexer<'a> {
 
   #[allow(dead_code)]
   fn read_char(&mut self) -> char {
-    match self.source.next() {
+    match self.next_char() {
       Some(c) => self.ascii_char_handler(c),
       None => '\0',
     }
@@ -92,7 +98,11 @@ impl<'a> Lexer<'a> {
   }
 
   fn next_char(&mut self) -> Option<char> {
-    self.source.next()
+    let char = self.source.next();
+    if char.is_some() {
+      self.col_num += 1;
+    }
+    char
   }
 }
 
@@ -118,8 +128,9 @@ impl<'a> Lexer<'a> {
     if let Some(c) = self.next_char() {
       match c {
         c if c.is_whitespace() => {
-          if matches!(c, '\n') {
+          if c.is_control() {
             self.line_num += 1;
+            self.col_num = 0;
           }
           self.do_next()
         }
@@ -159,7 +170,7 @@ impl<'a> Lexer<'a> {
       source: input.chars().peekable(),
       ahead: None,
       line_num: 1,
-      col_num: 1,
+      col_num: 0,
     }
   }
 }

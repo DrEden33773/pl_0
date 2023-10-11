@@ -55,7 +55,7 @@ mod demo {
 
   #[test]
   #[should_panic]
-  fn lexer_should_failed_demo() {
+  fn chinese_character_demo() {
     let ctx = "
       program ChineseProgramming;
       begin
