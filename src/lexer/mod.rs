@@ -1,3 +1,5 @@
+use crate::error::PL0Error;
+
 use self::token_def::Token;
 use std::{iter::Peekable, str::Chars};
 
@@ -175,6 +177,13 @@ impl<'a> Lexer<'a> {
 }
 
 impl<'a> Lexer<'a> {
+  pub fn collect_from(input: &'a str) -> Result<Vec<Token>, PL0Error> {
+    let lexer = Self::new(input);
+    let mut token_list = vec![];
+    for token in lexer {}
+    Ok(token_list)
+  }
+
   pub fn dbg_one_pass(input: &'a str) -> Vec<Token> {
     let lexer = Self::new(input);
     let mut token_list = vec![];
