@@ -11,7 +11,12 @@ pub enum CompileErrorType {
 
 impl Display for CompileErrorType {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{:?}", self)
+    let error_type = match self {
+      Self::LexicalError => "LexicalError",
+      Self::SyntaxError => "SyntaxError",
+      Self::SemanticError => "SemanticError",
+    };
+    write!(f, "{}", error_type)
   }
 }
 
