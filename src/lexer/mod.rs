@@ -5,7 +5,6 @@ use std::{iter::Peekable, str::Chars};
 use std::process::exit;
 
 pub mod methods;
-pub mod prelude;
 pub mod token_def;
 
 pub trait LexerIterator {
@@ -170,7 +169,7 @@ impl<'a> Lexer<'a> {
       source: input.chars().peekable(),
       ahead: None,
       line_num: 1,
-      col_num: 0,
+      col_num: 0, // MUST be zero!
     }
   }
 }

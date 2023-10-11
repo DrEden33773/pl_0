@@ -56,7 +56,8 @@ mod demo {
   #[test]
   #[should_panic]
   fn chinese_character_demo() {
-    let ctx = "
+    Lexer::dbg_one_pass(
+      "
       program ChineseProgramming;
       begin
         var 一, 二, 三;
@@ -65,7 +66,49 @@ mod demo {
         三 := 一 + 二;
         write(三);
       end.
-    ";
-    Lexer::dbg_one_pass(ctx);
+    ",
+    );
+  }
+
+  #[test]
+  #[should_panic]
+  fn single_colon_demo() {
+    Lexer::dbg_one_pass(
+      "
+      program SingleColon;
+      begin
+        var a;
+        a : 1;
+      end.
+    ",
+    );
+  }
+
+  #[test]
+  #[should_panic]
+  fn unsupported_ascii_char_demo() {
+    Lexer::dbg_one_pass(
+      "
+      program UnsupportedAsciiChar;
+      begin
+        var a;
+        a @ 1;
+      end.
+    ",
+    );
+  }
+
+  #[test]
+  #[should_panic]
+  fn malformed_char_demo() {
+    Lexer::dbg_one_pass(
+      "
+      program RussianProgramming;
+      begin
+        var こんにちは;
+        こんにちは = 1;
+      end.
+    ",
+    );
   }
 }
