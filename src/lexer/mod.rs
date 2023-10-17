@@ -20,6 +20,7 @@ pub struct Lexer<'a> {
   ahead: Option<Token>,
   line_num: usize,
   col_num: usize,
+  lexical_errors: Vec<PL0Error>,
 }
 
 impl<'a> Iterator for Lexer<'a> {
@@ -55,6 +56,7 @@ impl<'a> LexerIterator for Lexer<'a> {
 
 #[allow(dead_code)]
 impl<'a> Lexer<'a> {
+  #[deprecated]
   fn panic(&self, message: String) -> ! {
     #[cfg(not(feature = "debug"))]
     {
@@ -73,20 +75,22 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  fn panic_pl0error(&self, mut error_template: CompileError, message: String) -> ! {
+  fn panic_pl0error(&mut self, mut error_template: CompileError, message: String) -> ! {
     error_template.line = self.line_num;
     error_template.col = self.col_num;
     error_template.info = message;
-    panic!("{}", PL0Error::CompileError(error_template))
+    self
+      .lexical_errors
+      .push(PL0Error::CompileError(error_template.to_owned()));
+    panic!("{}", PL0Error::CompileError(error_template));
   }
 }
 
 impl<'a> Lexer<'a> {
-  fn ascii_char_handler(&self, c: char) -> char {
+  fn ascii_char_handler(&mut self, c: char) -> char {
     if c.is_ascii() {
       c
     } else {
-      // self.panic(format!("'{c}' is not an ASCII character"));
       self.panic_pl0error(
         CompileError::lexical_error_template(),
         format!("'{c}' is not an ASCII character"),
@@ -164,7 +168,6 @@ impl<'a> Lexer<'a> {
             Some(Token::EqSign)
           }
           _ => {
-            // self.panic(format!("'{c}' is an undefined sign, did you mean ':='?"));
             self.panic_pl0error(
               CompileError::lexical_error_template(),
               format!("'{c}' is an undefined sign, did you mean ':='?"),
@@ -174,14 +177,12 @@ impl<'a> Lexer<'a> {
         '0'..='9' => self.lexing_integer(c),
         'a'..='z' | 'A'..='Z' => self.lexing_identifier(c),
         c if !c.is_ascii() => {
-          // self.panic(format!("'{c}' is not an ASCII character"));
           self.panic_pl0error(
             CompileError::lexical_error_template(),
             format!("'{c}' is not an ASCII character"),
           );
         }
         _ => {
-          // self.panic(format!("'{c}' is an unexpected character"));
           self.panic_pl0error(
             CompileError::lexical_error_template(),
             format!("'{c}' is an unexpected character"),
@@ -201,6 +202,7 @@ impl<'a> Lexer<'a> {
       ahead: None,
       line_num: 1,
       col_num: 0, // MUST be zero!
+      lexical_errors: vec![],
     }
   }
 }

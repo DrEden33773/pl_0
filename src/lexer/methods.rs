@@ -34,7 +34,10 @@ impl<'a> Lexer<'a> {
         self.next_char();
         identifier.push(c);
       } else if c == '_' {
-        self.panic("'_' is not supported for identifier declaration".to_string());
+        self.panic_pl0error(
+          CompileError::lexical_error_template(),
+          "'_' is not supported for identifier declaration".to_string(),
+        );
       } else {
         break;
       }
@@ -48,10 +51,12 @@ impl<'a> Lexer<'a> {
 
 impl<'a> Lexer<'a> {
   pub(super) fn lexing_integer(&mut self, first: char) -> Option<Token> {
-    let mut scanned = first
-      .to_digit(10)
-      .unwrap_or_else(|| self.panic(format!("'{first}' is not a digit")))
-      as i64;
+    let mut scanned = first.to_digit(10).unwrap_or_else(|| {
+      self.panic_pl0error(
+        CompileError::lexical_error_template(),
+        format!("'{first}' is not a digit"),
+      )
+    }) as i64;
     loop {
       let c = self.peek_char();
       if c.is_ascii_digit() {
