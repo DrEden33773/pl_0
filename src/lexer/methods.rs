@@ -7,6 +7,7 @@ static KEYWORDS: Lazy<HashMap<&str, Token>> = Lazy::new(|| {
   vec![
     ("if", Token::If),
     ("then", Token::Then),
+    ("else", Token::Else),
     ("while", Token::While),
     ("do", Token::Do),
     ("const", Token::Const),
@@ -34,7 +35,7 @@ impl<'a> Lexer<'a> {
         self.next_char();
         identifier.push(c);
       } else if c == '_' {
-        self.panic_pl0error(
+        self.panic_compile_error(
           CompileError::lexical_error_template(),
           "'_' is not supported for identifier declaration".to_string(),
         );
@@ -52,7 +53,7 @@ impl<'a> Lexer<'a> {
 impl<'a> Lexer<'a> {
   pub(super) fn lexing_integer(&mut self, first: char) -> Option<Token> {
     let mut scanned = first.to_digit(10).unwrap_or_else(|| {
-      self.panic_pl0error(
+      self.panic_compile_error(
         CompileError::lexical_error_template(),
         format!("'{first}' is not a digit"),
       )

@@ -5,4 +5,4 @@ begin
   read(二);
   三 := 一 + 二;
   write(三);
-end.
+end

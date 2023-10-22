@@ -18,7 +18,6 @@ fn compile_from_file(src: &str) {
   println!("TokenList: {:?}", token_list);
 }
 
-#[allow(unused_variables)]
 fn main() {
   if let [_, source, ..] = &ARGS[..] {
     compile_from_file((PROJECT_ROOT.to_string() + source.as_str()).as_str());
@@ -48,7 +47,7 @@ mod demo {
         boolean := a >= b;
         boolean := a <> b;
         write(boolean);
-      end.
+      end
     ";
     let token_list = Lexer::dbg_one_pass(ctx);
     println!("TokenList: {:#?}", token_list);
@@ -66,7 +65,7 @@ mod demo {
         二 := 2;
         三 := 一 + 二;
         write(三);
-      end.
+      end
     ",
     );
   }
@@ -80,7 +79,7 @@ mod demo {
       begin
         var a;
         a : 1;
-      end.
+      end
     ",
     );
   }
@@ -94,7 +93,7 @@ mod demo {
       begin
         var a;
         a @ 1;
-      end.
+      end
     ",
     );
   }
@@ -108,7 +107,7 @@ mod demo {
       begin
         var こんにちは;
         こんにちは = 1;
-      end.
+      end
     ",
     );
   }

@@ -12,4 +12,4 @@ begin
   boolean := a >= b;
   boolean := a <> b;
   write(boolean);
-end.
+end

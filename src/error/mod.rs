@@ -12,6 +12,18 @@ pub enum PL0Error {
   RuntimeError(RuntimeError),
 }
 
+impl From<CompileError> for PL0Error {
+  fn from(err: CompileError) -> Self {
+    Self::CompileError(err)
+  }
+}
+
+impl From<RuntimeError> for PL0Error {
+  fn from(err: RuntimeError) -> Self {
+    Self::RuntimeError(err)
+  }
+}
+
 impl Display for PL0Error {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {

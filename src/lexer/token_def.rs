@@ -1,8 +1,9 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Token {
   /* keywords */
   If,
   Then,
+  Else,
   While,
   Do,
   Const,
