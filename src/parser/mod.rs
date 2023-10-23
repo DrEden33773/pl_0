@@ -269,7 +269,7 @@ impl<'a> Parser<'a> {
   }
 
   /// ```bnf
-  /// <exp> ::= [+|-] <term> {<aop><term>}
+  /// <exp> ::= [+|-] <term> {<aop> <term>}
   fn parse_exp(&mut self) -> ParseResult {
     let next_token_is_add = { self.lexer.observe_next(Token::Add) };
     let next_token_is_sub = { self.lexer.observe_next(Token::Sub) };
@@ -284,7 +284,7 @@ impl<'a> Parser<'a> {
   }
 
   /// ```bnf
-  /// <term> ::= <factor> {<mop><factor>}
+  /// <term> ::= <factor> {<mop> <factor>}
   fn parse_term(&mut self) -> ParseResult {
     self.parse_factor();
     while self.lexer.observe_next(Token::Mul) || self.lexer.observe_next(Token::Div) {
