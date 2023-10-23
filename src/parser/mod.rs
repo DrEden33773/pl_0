@@ -178,7 +178,7 @@ impl<'a> Parser<'a> {
       Some(token) => match token {
         Token::If => {
           self.lexer.match_next(Token::If);
-          self.parse_left_exp();
+          self.parse_l_exp();
           self.lexer.match_next(Token::Then);
           self.parse_statement();
           if self.lexer.observe_next(Token::Else) {
@@ -188,7 +188,7 @@ impl<'a> Parser<'a> {
         }
         Token::While => {
           self.lexer.match_next(Token::While);
-          self.parse_left_exp();
+          self.parse_l_exp();
           self.lexer.match_next(Token::Do);
           self.parse_statement();
         }
@@ -237,15 +237,13 @@ impl<'a> Parser<'a> {
         }
         _ => {
           let unexpected_token = token.to_owned();
-          {
-            self.lexer.panic_compile_error(
-              CompileError::syntax_error_template(),
-              format!(
-                "Expected a <statement> syntax_unit, but got an illegal token `{:?}`",
-                unexpected_token
-              ),
-            );
-          }
+          self.lexer.panic_compile_error(
+            CompileError::syntax_error_template(),
+            format!(
+              "Expected a <statement> syntax_unit, but got an illegal token `{:?}`",
+              unexpected_token
+            ),
+          );
         }
       },
       None => self.lexer.panic_compile_error(
@@ -257,7 +255,7 @@ impl<'a> Parser<'a> {
 
   /// ```bnf
   /// <l-exp> ::= <exp> <lop> <exp> | odd <exp>
-  fn parse_left_exp(&mut self) -> ParseResult {
+  fn parse_l_exp(&mut self) -> ParseResult {
     if self.lexer.observe_next(Token::Odd) {
       self.lexer.match_next(Token::Odd);
       self.parse_exp();
@@ -271,10 +269,10 @@ impl<'a> Parser<'a> {
   /// ```bnf
   /// <exp> ::= [+|-] <term> {<aop> <term>}
   fn parse_exp(&mut self) -> ParseResult {
-    let next_token_is_add = { self.lexer.observe_next(Token::Add) };
-    let next_token_is_sub = { self.lexer.observe_next(Token::Sub) };
-    if next_token_is_add || next_token_is_sub {
-      if next_token_is_add {
+    let is_next_add = self.lexer.observe_next(Token::Add);
+    let is_next_sub = self.lexer.observe_next(Token::Sub);
+    if is_next_add || is_next_sub {
+      if is_next_add {
         self.lexer.match_next(Token::Add);
       } else {
         self.lexer.match_next(Token::Sub);
@@ -320,15 +318,13 @@ impl<'a> Parser<'a> {
         Token::Ne => { /* TODO */ }
         _ => {
           let unexpected_token = token.to_owned();
-          {
-            self.lexer.panic_compile_error(
-              CompileError::syntax_error_template(),
-              format!(
-                "Expected a <lop> syntax_unit, but got an illegal token `{:?}`",
-                unexpected_token
-              ),
-            );
-          }
+          self.lexer.panic_compile_error(
+            CompileError::syntax_error_template(),
+            format!(
+              "Expected a <lop> syntax_unit, but got an illegal token `{:?}`",
+              unexpected_token
+            ),
+          );
         }
       },
       None => {
