@@ -24,37 +24,7 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  fn try_match_next(&mut self, token: Token) -> bool {
-    if let Some(t) = self.next() {
-      t == token
-    } else {
-      self.panic_compile_error(
-        CompileError::syntax_error_template(),
-        format!("Expected `{:?}`, but got `None`", token),
-      );
-    }
-  }
-
-  fn observe_next(&mut self, token: Token) {
-    if let Some(t) = self.peek() {
-      if *t != token {
-        let unexpected_token = t.to_owned();
-        {
-          self.panic_compile_error(
-            CompileError::syntax_error_template(),
-            format!("Expected `{:?}`, but got `{:?}`", token, unexpected_token),
-          );
-        }
-      }
-    } else {
-      self.panic_compile_error(
-        CompileError::syntax_error_template(),
-        format!("Expected `{:?}`, but got `None`", token),
-      );
-    }
-  }
-
-  fn try_observe_next(&mut self, token: Token) -> bool {
+  fn observe_next(&mut self, token: Token) -> bool {
     if let Some(t) = self.peek() {
       *t == token
     } else {
@@ -100,13 +70,13 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_block(&mut self) -> ParseResult {
-    if self.lexer.try_observe_next(Token::Const) {
+    if self.lexer.observe_next(Token::Const) {
       self.parse_const_decl();
     }
-    if self.lexer.try_observe_next(Token::Var) {
+    if self.lexer.observe_next(Token::Var) {
       self.parse_var_decl();
     }
-    if self.lexer.try_observe_next(Token::Procedure) {
+    if self.lexer.observe_next(Token::Procedure) {
       self.parse_proc();
     }
     self.parse_body();
@@ -121,7 +91,7 @@ impl<'a> Parser<'a> {
   fn parse_var_decl(&mut self) -> ParseResult {
     self.lexer.match_next(Token::Var);
     self.parse_id();
-    while self.lexer.try_observe_next(Token::Comma) {
+    while self.lexer.observe_next(Token::Comma) {
       self.lexer.match_next(Token::Comma);
       self.parse_id();
     }
@@ -131,9 +101,9 @@ impl<'a> Parser<'a> {
     self.lexer.match_next(Token::Procedure);
     self.parse_id();
     self.lexer.match_next(Token::ParL);
-    if !self.lexer.try_observe_next(Token::ParR) {
+    if !self.lexer.observe_next(Token::ParR) {
       self.parse_id();
-      while self.lexer.try_observe_next(Token::Comma) {
+      while self.lexer.observe_next(Token::Comma) {
         self.lexer.match_next(Token::Comma);
         self.parse_id();
       }
@@ -141,7 +111,7 @@ impl<'a> Parser<'a> {
     self.lexer.match_next(Token::ParR);
     self.lexer.match_next(Token::Semicolon);
     self.parse_block();
-    while self.lexer.try_observe_next(Token::Semicolon) {
+    while self.lexer.observe_next(Token::Semicolon) {
       self.lexer.match_next(Token::Semicolon);
       self.parse_proc();
     }
@@ -150,7 +120,7 @@ impl<'a> Parser<'a> {
   fn parse_body(&mut self) -> ParseResult {
     self.lexer.match_next(Token::Begin);
     self.parse_statement();
-    if self.lexer.try_observe_next(Token::Semicolon) {
+    if self.lexer.observe_next(Token::Semicolon) {
       self.lexer.match_next(Token::Semicolon);
       self.parse_statement();
     }
@@ -165,7 +135,7 @@ impl<'a> Parser<'a> {
           self.parse_left_exp();
           self.lexer.match_next(Token::Then);
           self.parse_statement();
-          if self.lexer.try_observe_next(Token::Else) {
+          if self.lexer.observe_next(Token::Else) {
             self.lexer.match_next(Token::Else);
             self.parse_statement();
           }
@@ -180,9 +150,9 @@ impl<'a> Parser<'a> {
           self.lexer.match_next(Token::Call);
           self.parse_id();
           self.lexer.match_next(Token::ParL);
-          if !self.lexer.try_observe_next(Token::ParR) {
+          if !self.lexer.observe_next(Token::ParR) {
             self.parse_exp();
-            while self.lexer.try_observe_next(Token::Comma) {
+            while self.lexer.observe_next(Token::Comma) {
               self.lexer.match_next(Token::Comma);
               self.parse_exp();
             }
@@ -193,7 +163,7 @@ impl<'a> Parser<'a> {
           self.lexer.match_next(Token::Read);
           self.lexer.match_next(Token::ParL);
           self.parse_id();
-          while self.lexer.try_observe_next(Token::Comma) {
+          while self.lexer.observe_next(Token::Comma) {
             self.lexer.match_next(Token::Comma);
             self.parse_id();
           }
@@ -203,7 +173,7 @@ impl<'a> Parser<'a> {
           self.lexer.match_next(Token::Write);
           self.lexer.match_next(Token::ParL);
           self.parse_exp();
-          while self.lexer.try_observe_next(Token::Comma) {
+          while self.lexer.observe_next(Token::Comma) {
             self.lexer.match_next(Token::Comma);
             self.parse_exp();
           }
@@ -236,7 +206,7 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_left_exp(&mut self) -> ParseResult {
-    if self.lexer.try_observe_next(Token::Odd) {
+    if self.lexer.observe_next(Token::Odd) {
       self.lexer.match_next(Token::Odd);
       self.parse_exp();
     } else {
@@ -247,8 +217,8 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_exp(&mut self) -> ParseResult {
-    let next_token_is_add = { self.lexer.try_observe_next(Token::Add) };
-    let next_token_is_sub = { self.lexer.try_observe_next(Token::Sub) };
+    let next_token_is_add = { self.lexer.observe_next(Token::Add) };
+    let next_token_is_sub = { self.lexer.observe_next(Token::Sub) };
     if next_token_is_add || next_token_is_sub {
       if next_token_is_add {
         self.lexer.match_next(Token::Add);
@@ -261,14 +231,14 @@ impl<'a> Parser<'a> {
 
   fn parse_term(&mut self) -> ParseResult {
     self.parse_factor();
-    while self.lexer.try_observe_next(Token::Mul) || self.lexer.try_observe_next(Token::Div) {
+    while self.lexer.observe_next(Token::Mul) || self.lexer.observe_next(Token::Div) {
       self.parse_mop();
       self.parse_factor();
     }
   }
 
   fn parse_factor(&mut self) -> ParseResult {
-    if self.lexer.try_observe_next(Token::ParL) {
+    if self.lexer.observe_next(Token::ParL) {
       self.lexer.match_next(Token::ParL);
       self.parse_exp();
       self.lexer.match_next(Token::ParR);
@@ -311,9 +281,9 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_aop(&mut self) -> ParseResult {
-    if self.lexer.try_observe_next(Token::Add) {
+    if self.lexer.observe_next(Token::Add) {
       self.lexer.match_next(Token::Add);
-    } else if self.lexer.try_observe_next(Token::Sub) {
+    } else if self.lexer.observe_next(Token::Sub) {
       self.lexer.match_next(Token::Sub);
     } else {
       self.lexer.panic_compile_error(
@@ -324,9 +294,9 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_mop(&mut self) -> ParseResult {
-    if self.lexer.try_observe_next(Token::Mul) {
+    if self.lexer.observe_next(Token::Mul) {
       self.lexer.match_next(Token::Mul);
-    } else if self.lexer.try_observe_next(Token::Div) {
+    } else if self.lexer.observe_next(Token::Div) {
       self.lexer.match_next(Token::Div);
     } else {
       self.lexer.panic_compile_error(
