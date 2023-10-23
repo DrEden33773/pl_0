@@ -42,6 +42,8 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
+  /// ```bnf
+  /// <prog> ::= program <id> ; <block>
   fn parse_program(&mut self) -> ParseResult {
     self.lexer.match_next(Token::Program);
     self.parse_id();
@@ -49,6 +51,8 @@ impl<'a> Parser<'a> {
     self.parse_block();
   }
 
+  /// ```bnf
+  /// <id> -> @letter { @letter | @digit }
   fn parse_id(&mut self) -> ParseResult {
     if matches!(self.lexer.next(), Some(Token::Identifier(_))) {
     } else {
@@ -59,6 +63,8 @@ impl<'a> Parser<'a> {
     }
   }
 
+  /// ```bnf
+  /// <integer> -> @digit { @digit }
   fn parse_integer(&mut self) -> ParseResult {
     if matches!(self.lexer.next(), Some(Token::Integer(_))) {
     } else {
@@ -69,40 +75,66 @@ impl<'a> Parser<'a> {
     }
   }
 
+  /// ```bnf
+  /// <block> ::= [<const-decl>][<var-decl>][<proc>]<body>
   fn parse_block(&mut self) -> ParseResult {
+    // [<const-decl>]
     if self.lexer.observe_next(Token::Const) {
       self.parse_const_decl();
     }
+    // [<var-decl>]
     if self.lexer.observe_next(Token::Var) {
       self.parse_var_decl();
     }
+    // [<proc>]
     if self.lexer.observe_next(Token::Procedure) {
       self.parse_proc();
     }
     self.parse_body();
   }
 
+  /// ```bnf
+  /// <const-decl> ::= const <const> {, <const>} ;
   fn parse_const_decl(&mut self) -> ParseResult {
+    self.lexer.match_next(Token::Const);
+    self.parse_const();
+    // {, <const>}
+    while self.lexer.observe_next(Token::Comma) {
+      self.lexer.match_next(Token::Comma);
+      self.parse_const();
+    }
+  }
+
+  /// ```bnf
+  /// <const> ::= <id> := <integer>
+  fn parse_const(&mut self) -> ParseResult {
     self.parse_id();
     self.lexer.match_next(Token::EqSign);
     self.parse_integer();
   }
 
+  /// ```bnf
+  /// <var-decl> ::= var <id> {, <id>} ;
   fn parse_var_decl(&mut self) -> ParseResult {
     self.lexer.match_next(Token::Var);
     self.parse_id();
+    // {, <id>}
     while self.lexer.observe_next(Token::Comma) {
       self.lexer.match_next(Token::Comma);
       self.parse_id();
     }
   }
 
+  /// ```bnf
+  /// <proc> ::= procedure <id> ( [<id> {, <id>}] ) ; <block> {; <proc>}
   fn parse_proc(&mut self) -> ParseResult {
     self.lexer.match_next(Token::Procedure);
     self.parse_id();
     self.lexer.match_next(Token::ParL);
+    // [<id>]
     if !self.lexer.observe_next(Token::ParR) {
       self.parse_id();
+      // [<id> {, <id>}]
       while self.lexer.observe_next(Token::Comma) {
         self.lexer.match_next(Token::Comma);
         self.parse_id();
@@ -111,22 +143,36 @@ impl<'a> Parser<'a> {
     self.lexer.match_next(Token::ParR);
     self.lexer.match_next(Token::Semicolon);
     self.parse_block();
+    // {; <proc>}
     while self.lexer.observe_next(Token::Semicolon) {
       self.lexer.match_next(Token::Semicolon);
       self.parse_proc();
     }
   }
 
+  /// ```bnf
+  /// <body> ::= begin <statement> {; <statement>} end
   fn parse_body(&mut self) -> ParseResult {
     self.lexer.match_next(Token::Begin);
     self.parse_statement();
-    if self.lexer.observe_next(Token::Semicolon) {
+    // {; <statement>}
+    while self.lexer.observe_next(Token::Semicolon) {
       self.lexer.match_next(Token::Semicolon);
       self.parse_statement();
     }
     self.lexer.match_next(Token::End);
   }
 
+  /// ```bnf
+  /// <statement> ::= <id> := <exp>
+  ///               | if <l-exp> then <statement> [else <statement>]
+  ///               | while <l-exp> do <statement>
+  ///               | call <id> [ ( <exp> {, <exp>} ) ]
+  ///               | read ( <id> {, <id>} )
+  ///               | write ( <exp> {, <exp>} )
+  ///               | <body>
+  ///               | read ( <id> {, <id>} )
+  ///               | write ( <exp> {, <exp>} )
   fn parse_statement(&mut self) -> ParseResult {
     match self.lexer.peek() {
       Some(token) => match token {
@@ -150,8 +196,10 @@ impl<'a> Parser<'a> {
           self.lexer.match_next(Token::Call);
           self.parse_id();
           self.lexer.match_next(Token::ParL);
+          // [ ( <exp> ) ]
           if !self.lexer.observe_next(Token::ParR) {
             self.parse_exp();
+            // [ ( <exp> {, <exp>} ) ]
             while self.lexer.observe_next(Token::Comma) {
               self.lexer.match_next(Token::Comma);
               self.parse_exp();
@@ -163,6 +211,7 @@ impl<'a> Parser<'a> {
           self.lexer.match_next(Token::Read);
           self.lexer.match_next(Token::ParL);
           self.parse_id();
+          // ( <id> {, <id>} )
           while self.lexer.observe_next(Token::Comma) {
             self.lexer.match_next(Token::Comma);
             self.parse_id();
@@ -173,6 +222,7 @@ impl<'a> Parser<'a> {
           self.lexer.match_next(Token::Write);
           self.lexer.match_next(Token::ParL);
           self.parse_exp();
+          // ( <exp> {, <exp>} )
           while self.lexer.observe_next(Token::Comma) {
             self.lexer.match_next(Token::Comma);
             self.parse_exp();
@@ -205,6 +255,8 @@ impl<'a> Parser<'a> {
     }
   }
 
+  /// ```bnf
+  /// <l-exp> ::= <exp> <lop> <exp> | odd <exp>
   fn parse_left_exp(&mut self) -> ParseResult {
     if self.lexer.observe_next(Token::Odd) {
       self.lexer.match_next(Token::Odd);
@@ -216,6 +268,8 @@ impl<'a> Parser<'a> {
     }
   }
 
+  /// ```bnf
+  /// <exp> ::= [+|-] <term> {<aop><term>}
   fn parse_exp(&mut self) -> ParseResult {
     let next_token_is_add = { self.lexer.observe_next(Token::Add) };
     let next_token_is_sub = { self.lexer.observe_next(Token::Sub) };
@@ -229,6 +283,8 @@ impl<'a> Parser<'a> {
     self.parse_term();
   }
 
+  /// ```bnf
+  /// <term> ::= <factor> {<mop><factor>}
   fn parse_term(&mut self) -> ParseResult {
     self.parse_factor();
     while self.lexer.observe_next(Token::Mul) || self.lexer.observe_next(Token::Div) {
@@ -237,6 +293,8 @@ impl<'a> Parser<'a> {
     }
   }
 
+  /// ```bnf
+  /// <factor> ::= <id> | <integer> | (<exp>)
   fn parse_factor(&mut self) -> ParseResult {
     if self.lexer.observe_next(Token::ParL) {
       self.lexer.match_next(Token::ParL);
@@ -249,6 +307,8 @@ impl<'a> Parser<'a> {
     }
   }
 
+  /// ```bnf
+  /// <lop> ::= = | <> | < | <= | > | >=
   fn parse_lop(&mut self) -> ParseResult {
     match self.lexer.next() {
       Some(token) => match token {
@@ -280,6 +340,8 @@ impl<'a> Parser<'a> {
     }
   }
 
+  /// ```bnf
+  /// <aop> ::= + | -
   fn parse_aop(&mut self) -> ParseResult {
     if self.lexer.observe_next(Token::Add) {
       self.lexer.match_next(Token::Add);
@@ -293,6 +355,8 @@ impl<'a> Parser<'a> {
     }
   }
 
+  /// ```bnf
+  /// <mop> ::= * | /
   fn parse_mop(&mut self) -> ParseResult {
     if self.lexer.observe_next(Token::Mul) {
       self.lexer.match_next(Token::Mul);
