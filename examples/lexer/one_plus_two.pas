@@ -1,15 +1,10 @@
 program OnePlusTwo;
+var
+  a, b, c, bool;
 begin
-  var a, b, c;
   a := 1;
   b := 2;
   c := a + b;
   write(c);
-  var boolean := a = b;
-  boolean := a < b;
-  boolean := a > b; 
-  boolean := a <= b;
-  boolean := a >= b;
-  boolean := a <> b;
-  write(boolean);
+  if c <> 3 then write(0) else write(1)
 end
