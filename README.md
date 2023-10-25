@@ -30,8 +30,8 @@
 <lop> -> = | <> | < | <= | > | >=
 <aop> -> + | -
 <mop> -> * | /
-<id> -> <letter> { <letter> | <digit> }
-<integer> -> <digit> { <digit> }
+<id> -> <letter> {<letter> | <digit>}
+<integer> -> <digit> {<digit>}
 <letter> -> a | b | ... | z | A | B | ... | Z
 <digit> -> 0 | 1 | ... | 9
 ```
@@ -80,4 +80,8 @@ Which means that, there's no _left recursion pattern_ detected in the _grammar_.
 
 #### Condition#2
 
+TODO:
+
 #### Condition#3
+
+TODO:

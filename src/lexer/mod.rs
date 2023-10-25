@@ -66,6 +66,16 @@ impl<'a> Lexer<'a> {
     }
   }
 
+  fn sync_to_curr_token_last_char(&mut self) {
+    loop {
+      if self.peek_char().is_whitespace() {
+        break;
+      } else {
+        self.next_char();
+      }
+    }
+  }
+
   pub(super) fn panic_compile_error(
     &mut self,
     mut error_template: CompileError,
@@ -175,12 +185,14 @@ impl<'a> Lexer<'a> {
             CompileError::lexical_error_template(),
             format!("'{c}' is not an ASCII character"),
           );
+          None
         }
         _ => {
           self.panic_compile_error(
             CompileError::lexical_error_template(),
             format!("'{c}' is an unexpected character"),
           );
+          None
         }
       }
     } else {
