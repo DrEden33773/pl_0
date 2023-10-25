@@ -1,19 +1,28 @@
+#![allow(dead_code)]
+
+use crate::ast::{
+  AopExpr, BlockExpr, BodyExpr, ConstDeclExpr, ConstExpr, ExpExpr, FactorExpr, IdExpr, IntegerExpr,
+  LExpExpr, LopExpr, MopExpr, ProcExpr, StatementExpr, TermExpr, VarDeclExpr,
+};
+
 use super::*;
 
 impl<'a> Parser<'a> {
   /// ```bnf
   /// <prog> -> program <id> ; <block>
-  pub(super) fn parse_program(&mut self) -> ParseResult {
+  pub(super) fn parse_program(&mut self) -> ProgramExpr {
     self.lexer.consume_next(Token::Program);
-    self.parse_id();
+    let id = self.parse_id().into();
     self.lexer.consume_next(Token::Semicolon);
-    self.parse_block();
+    let block = self.parse_block().into();
+    ProgramExpr { id, block }
   }
 
   /// ```bnf
   /// <id> -> @letter { @letter | @digit }
-  fn parse_id(&mut self) -> ParseResult {
-    if matches!(self.lexer.next(), Some(Token::Identifier(_))) {
+  fn parse_id(&mut self) -> IdExpr {
+    if let Some(Token::Identifier(id)) = self.lexer.next() {
+      IdExpr(id)
     } else {
       self.lexer.panic_compile_error(
         CompileError::syntax_error_template(),
@@ -24,8 +33,9 @@ impl<'a> Parser<'a> {
 
   /// ```bnf
   /// <integer> -> @digit { @digit }
-  fn parse_integer(&mut self) -> ParseResult {
-    if matches!(self.lexer.next(), Some(Token::Integer(_))) {
+  fn parse_integer(&mut self) -> IntegerExpr {
+    if let Some(Token::Integer(integer)) = self.lexer.next() {
+      IntegerExpr(integer)
     } else {
       self.lexer.panic_compile_error(
         CompileError::syntax_error_template(),
@@ -36,92 +46,122 @@ impl<'a> Parser<'a> {
 
   /// ```bnf
   /// <block> -> [<const-decl>][<var-decl>][<proc>]<body>
-  fn parse_block(&mut self) -> ParseResult {
+  fn parse_block(&mut self) -> BlockExpr {
     // [<const-decl>]
-    if self.lexer.match_next(Token::Const) {
-      self.parse_const_decl();
-    }
+    let const_decl = if self.lexer.match_next(Token::Const) {
+      Box::new(self.parse_const_decl()).into()
+    } else {
+      None
+    };
     // [<var-decl>]
-    if self.lexer.match_next(Token::Var) {
-      self.parse_var_decl();
-    }
+    let var_decl = if self.lexer.match_next(Token::Var) {
+      Box::new(self.parse_var_decl()).into()
+    } else {
+      None
+    };
     // [<proc>]
-    if self.lexer.match_next(Token::Procedure) {
-      self.parse_proc();
+    let proc = if self.lexer.match_next(Token::Procedure) {
+      Box::new(self.parse_proc()).into()
+    } else {
+      None
+    };
+    let body = self.parse_body().into();
+    BlockExpr {
+      const_decl,
+      var_decl,
+      proc,
+      body,
     }
-    self.parse_body();
   }
 
   /// ```bnf
   /// <const-decl> -> const <const> {, <const>} ;
-  fn parse_const_decl(&mut self) -> ParseResult {
+  fn parse_const_decl(&mut self) -> ConstDeclExpr {
+    let mut constants = vec![];
     self.lexer.consume_next(Token::Const);
-    self.parse_const();
+    constants.push(self.parse_const().into());
     // {, <const>}
     while self.lexer.match_next(Token::Comma) {
       self.lexer.consume_next(Token::Comma);
-      self.parse_const();
+      constants.push(self.parse_const().into());
     }
     self.lexer.consume_next(Token::Semicolon);
+    ConstDeclExpr { constants }
   }
 
   /// ```bnf
   /// <const> -> <id> := <integer>
-  fn parse_const(&mut self) -> ParseResult {
-    self.parse_id();
+  fn parse_const(&mut self) -> ConstExpr {
+    let id_expr = self.parse_id();
     self.lexer.consume_next(Token::EqSign);
-    self.parse_integer();
+    let integer_expr = self.parse_integer();
+    ConstExpr {
+      id: id_expr.into(),
+      integer: integer_expr.into(),
+    }
   }
 
   /// ```bnf
   /// <var-decl> -> var <id> {, <id>} ;
-  fn parse_var_decl(&mut self) -> ParseResult {
+  fn parse_var_decl(&mut self) -> VarDeclExpr {
+    let mut ids = vec![];
     self.lexer.consume_next(Token::Var);
-    self.parse_id();
+    ids.push(self.parse_id().into());
     // {, <id>}
     while self.lexer.match_next(Token::Comma) {
       self.lexer.consume_next(Token::Comma);
-      self.parse_id();
+      ids.push(self.parse_id().into());
     }
     self.lexer.consume_next(Token::Semicolon);
+    VarDeclExpr { ids }
   }
 
   /// ```bnf
   /// <proc> -> procedure <id> ( [<id> {, <id>}] ) ; <block> {; <proc>}
-  fn parse_proc(&mut self) -> ParseResult {
+  fn parse_proc(&mut self) -> ProcExpr {
     self.lexer.consume_next(Token::Procedure);
-    self.parse_id();
+    let id = self.parse_id().into();
     self.lexer.consume_next(Token::ParL);
+    let mut args: Vec<Box<IdExpr>> = vec![];
     // [<id>]
     if !self.lexer.match_next(Token::ParR) {
-      self.parse_id();
+      args.push(self.parse_id().into());
       // [<id> {, <id>}]
       while self.lexer.match_next(Token::Comma) {
         self.lexer.consume_next(Token::Comma);
-        self.parse_id();
+        args.push(self.parse_id().into());
       }
     }
     self.lexer.consume_next(Token::ParR);
     self.lexer.consume_next(Token::Semicolon);
-    self.parse_block();
+    let block = self.parse_block().into();
+    let mut procs = vec![];
     // {; <proc>}
     while self.lexer.match_next(Token::Semicolon) {
       self.lexer.consume_next(Token::Semicolon);
-      self.parse_proc();
+      procs.push(self.parse_proc().into());
+    }
+    ProcExpr {
+      id,
+      args,
+      block,
+      procs,
     }
   }
 
   /// ```bnf
   /// <body> -> begin <statement> {; <statement>} end
-  fn parse_body(&mut self) -> ParseResult {
+  fn parse_body(&mut self) -> BodyExpr {
+    let mut statements = vec![];
     self.lexer.consume_next(Token::Begin);
-    self.parse_statement();
+    statements.push(self.parse_statement().into());
     // {; <statement>}
     while self.lexer.match_next(Token::Semicolon) {
       self.lexer.consume_next(Token::Semicolon);
-      self.parse_statement();
+      statements.push(self.parse_statement().into());
     }
     self.lexer.consume_next(Token::End);
+    BodyExpr { statements }
   }
 
   /// ```bnf
@@ -134,67 +174,85 @@ impl<'a> Parser<'a> {
   ///               | <body>
   ///               | read ( <id> {, <id>} )
   ///               | write ( <exp> {, <exp>} )
-  fn parse_statement(&mut self) -> ParseResult {
+  fn parse_statement(&mut self) -> StatementExpr {
     match self.lexer.peek() {
       Some(token) => match token {
         Token::If => {
           self.lexer.consume_next(Token::If);
-          self.parse_l_exp();
+          let l_exp = self.parse_l_exp().into();
           self.lexer.consume_next(Token::Then);
-          self.parse_statement();
-          if self.lexer.match_next(Token::Else) {
+          let then_statement = self.parse_statement().into();
+          let else_statement = if self.lexer.match_next(Token::Else) {
             self.lexer.consume_next(Token::Else);
-            self.parse_statement();
+            Some(self.parse_statement().into())
+          } else {
+            None
+          };
+          StatementExpr::If {
+            l_exp,
+            then_statement,
+            else_statement,
           }
         }
         Token::While => {
           self.lexer.consume_next(Token::While);
-          self.parse_l_exp();
+          let l_exp = self.parse_l_exp().into();
           self.lexer.consume_next(Token::Do);
-          self.parse_statement();
+          let statement = self.parse_statement().into();
+          StatementExpr::While { l_exp, statement }
         }
         Token::Call => {
           self.lexer.consume_next(Token::Call);
-          self.parse_id();
+          let id = self.parse_id().into();
           self.lexer.consume_next(Token::ParL);
+          let mut args = vec![];
           // ( [<exp>] )
           if !self.lexer.match_next(Token::ParR) {
-            self.parse_exp();
+            args.push(self.parse_exp().into());
             // ( [<exp> {, <exp>}] )
             while self.lexer.match_next(Token::Comma) {
               self.lexer.consume_next(Token::Comma);
-              self.parse_exp();
+              args.push(self.parse_exp().into());
             }
           }
           self.lexer.consume_next(Token::ParR);
+          StatementExpr::Call { id, args }
         }
         Token::Read => {
           self.lexer.consume_next(Token::Read);
           self.lexer.consume_next(Token::ParL);
-          self.parse_id();
+          let mut ids = vec![];
+          ids.push(self.parse_id().into());
           // ( <id> {, <id>} )
           while self.lexer.match_next(Token::Comma) {
             self.lexer.consume_next(Token::Comma);
-            self.parse_id();
+            ids.push(self.parse_id().into());
           }
           self.lexer.consume_next(Token::ParR);
+          StatementExpr::Read { ids }
         }
         Token::Write => {
           self.lexer.consume_next(Token::Write);
           self.lexer.consume_next(Token::ParL);
-          self.parse_exp();
+          let mut exps = vec![];
+          exps.push(self.parse_exp().into());
           // ( <exp> {, <exp>} )
           while self.lexer.match_next(Token::Comma) {
             self.lexer.consume_next(Token::Comma);
-            self.parse_exp();
+            exps.push(self.parse_exp().into());
           }
           self.lexer.consume_next(Token::ParR);
+          StatementExpr::Write { exps }
         }
-        Token::Begin => self.parse_body(),
+        Token::Begin => {
+          let body = self.parse_body().into();
+          StatementExpr::Body { body }
+        }
         Token::Identifier(_) => {
-          self.parse_id();
+          let id = self.parse_id().into();
           self.lexer.consume_next(Token::EqSign);
-          self.parse_exp();
+          let exp = self.parse_exp().into();
+          StatementExpr::Id { id, exp }
         }
         _ => {
           let unexpected_token = token.to_owned();
@@ -216,20 +274,22 @@ impl<'a> Parser<'a> {
 
   /// ```bnf
   /// <l-exp> -> <exp> <lop> <exp> | odd <exp>
-  fn parse_l_exp(&mut self) -> ParseResult {
+  fn parse_l_exp(&mut self) -> LExpExpr {
     if self.lexer.match_next(Token::Odd) {
       self.lexer.consume_next(Token::Odd);
-      self.parse_exp();
+      let exp = self.parse_exp().into();
+      LExpExpr::Odd { exp }
     } else {
-      self.parse_exp();
-      self.parse_lop();
-      self.parse_exp();
+      let l_exp = self.parse_exp().into();
+      let lop = self.parse_lop().into();
+      let r_exp = self.parse_exp().into();
+      LExpExpr::Exp { l_exp, lop, r_exp }
     }
   }
 
   /// ```bnf
   /// <exp> -> [+|-] <term> {<aop> <term>}
-  fn parse_exp(&mut self) -> ParseResult {
+  fn parse_exp(&mut self) -> ExpExpr {
     let is_next_add = self.lexer.match_next(Token::Add);
     let is_next_sub = self.lexer.match_next(Token::Sub);
     if is_next_add || is_next_sub {
@@ -239,49 +299,73 @@ impl<'a> Parser<'a> {
         self.lexer.consume_next(Token::Sub);
       }
     }
-    self.parse_term();
+    let term = self.parse_term().into();
+    let mut aop_terms = vec![];
     // {<aop> <term>}
     while self.lexer.match_next(Token::Add) || self.lexer.match_next(Token::Sub) {
-      self.parse_aop();
-      self.parse_term();
+      let aop = self.parse_aop();
+      let term = self.parse_term();
+      aop_terms.push((aop.into(), term.into()));
+    }
+    ExpExpr {
+      is_negative: is_next_sub,
+      term,
+      aop_terms,
     }
   }
 
   /// ```bnf
   /// <term> -> <factor> {<mop> <factor>}
-  fn parse_term(&mut self) -> ParseResult {
-    self.parse_factor();
+  fn parse_term(&mut self) -> TermExpr {
+    let factor = self.parse_factor().into();
+    let mut mop_factors = vec![];
     while self.lexer.match_next(Token::Mul) || self.lexer.match_next(Token::Div) {
-      self.parse_mop();
-      self.parse_factor();
+      let mop = self.parse_mop();
+      let factor = self.parse_factor();
+      mop_factors.push((mop.into(), factor.into()));
+    }
+    TermExpr {
+      factor,
+      mop_factors,
     }
   }
 
   /// ```bnf
   /// <factor> -> <id> | <integer> | (<exp>)
-  fn parse_factor(&mut self) -> ParseResult {
+  fn parse_factor(&mut self) -> FactorExpr {
     if self.lexer.match_next(Token::ParL) {
       self.lexer.consume_next(Token::ParL);
-      self.parse_exp();
+      let exp = self.parse_exp().into();
       self.lexer.consume_next(Token::ParR);
+      FactorExpr::Exp(exp)
     } else if matches!(self.lexer.peek(), Some(Token::Identifier(_))) {
-      self.parse_id();
+      let id = self.parse_id().into();
+      FactorExpr::Id(id)
     } else if matches!(self.lexer.peek(), Some(Token::Integer(_))) {
-      self.parse_integer();
+      let integer = self.parse_integer().into();
+      FactorExpr::Integer(integer)
+    } else {
+      let unexpected_token = self.lexer.peek().cloned();
+      self
+        .lexer
+        .panic_compile_error(CompileError::syntax_error_template(), format!(
+          "Expected `<id>` / `<integer>` / `(<exp>)` syntax_unit, but got `{:?}` token which cannot match above",
+          unexpected_token
+        ))
     }
   }
 
   /// ```bnf
   /// <lop> -> = | <> | < | <= | > | >=
-  fn parse_lop(&mut self) -> ParseResult {
+  fn parse_lop(&mut self) -> LopExpr {
     match self.lexer.next() {
       Some(token) => match token {
-        Token::Eq => { /* TODO */ }
-        Token::Lt => { /* TODO */ }
-        Token::Gt => { /* TODO */ }
-        Token::Le => { /* TODO */ }
-        Token::Ge => { /* TODO */ }
-        Token::Ne => { /* TODO */ }
+        Token::Eq => LopExpr::Eq,
+        Token::Lt => LopExpr::Lt,
+        Token::Gt => LopExpr::Gt,
+        Token::Le => LopExpr::Le,
+        Token::Ge => LopExpr::Ge,
+        Token::Ne => LopExpr::Ne,
         _ => {
           let unexpected_token = token.to_owned();
           self.lexer.panic_compile_error(
@@ -304,11 +388,13 @@ impl<'a> Parser<'a> {
 
   /// ```bnf
   /// <aop> -> + | -
-  fn parse_aop(&mut self) -> ParseResult {
+  fn parse_aop(&mut self) -> AopExpr {
     if self.lexer.match_next(Token::Add) {
       self.lexer.consume_next(Token::Add);
+      AopExpr::Add
     } else if self.lexer.match_next(Token::Sub) {
       self.lexer.consume_next(Token::Sub);
+      AopExpr::Sub
     } else {
       self.lexer.panic_compile_error(
         CompileError::syntax_error_template(),
@@ -319,11 +405,13 @@ impl<'a> Parser<'a> {
 
   /// ```bnf
   /// <mop> -> * | /
-  fn parse_mop(&mut self) -> ParseResult {
+  fn parse_mop(&mut self) -> MopExpr {
     if self.lexer.match_next(Token::Mul) {
       self.lexer.consume_next(Token::Mul);
+      MopExpr::Mul
     } else if self.lexer.match_next(Token::Div) {
       self.lexer.consume_next(Token::Div);
+      MopExpr::Div
     } else {
       self.lexer.panic_compile_error(
         CompileError::syntax_error_template(),

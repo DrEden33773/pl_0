@@ -1,12 +1,8 @@
-use crate::lexer::token_def::Token;
-
 pub trait Expr {}
 
 #[derive(Debug)]
 pub struct ProgramExpr {
-  pub program: Box<Token>,
-  pub id: Box<Token>,
-  pub semicolon: Box<Token>,
+  pub id: Box<IdExpr>,
   pub block: Box<BlockExpr>,
 }
 
@@ -70,10 +66,10 @@ pub enum StatementExpr {
     body: Box<BodyExpr>,
   },
   Read {
-    id: Box<IdExpr>,
+    ids: Vec<Box<IdExpr>>,
   },
   Write {
-    exp: Box<ExpExpr>,
+    exps: Vec<Box<ExpExpr>>,
   },
 }
 
@@ -132,7 +128,7 @@ pub enum MopExpr {
 }
 
 #[derive(Debug)]
-pub struct IdExpr(String);
+pub struct IdExpr(pub String);
 
 #[derive(Debug)]
-pub struct IntegerExpr(i64);
+pub struct IntegerExpr(pub i64);
