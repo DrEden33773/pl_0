@@ -1,5 +1,7 @@
 use once_cell::sync::Lazy;
-use pl_0::{lexer::Lexer, parser::Parser};
+#[cfg(test)]
+use pl_0::lexer::Lexer;
+use pl_0::parser::Parser;
 use project_root::get_project_root;
 use std::{env::args, fs::File, io::Read};
 
@@ -16,8 +18,7 @@ fn compile_from_file(src: &str) {
     .unwrap();
   let mut parser = Parser::new(&string_buf);
   parser.parse();
-  let token_list = Lexer::dbg_one_pass(&string_buf);
-  println!("TokenList: {:?}", token_list);
+  parser.show_ugly_ast();
 }
 
 fn main() {

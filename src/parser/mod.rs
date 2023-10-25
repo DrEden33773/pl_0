@@ -6,6 +6,7 @@ use crate::{
   ast::ProgramExpr,
   error::compile_error::CompileError,
   lexer::{token_def::Token, Lexer, LexerIterator},
+  SEP,
 };
 
 pub(super) type ParseResult = ();
@@ -54,7 +55,16 @@ impl<'a> Parser<'a> {
   }
 
   pub fn parse(&mut self) -> ParseResult {
-    self.parse_program();
-    println!("Parse success!");
+    let program_expr = self.parse_program();
+    self.ast_entry = Some(program_expr.into());
+  }
+
+  pub fn show_ugly_ast(&self) {
+    println!("AST:");
+    println!("{}", SEP.as_str());
+    match &self.ast_entry {
+      Some(ctx) => println!("{:#?}", ctx),
+      None => println!("None"),
+    }
   }
 }

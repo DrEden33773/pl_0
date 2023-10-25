@@ -1,5 +1,3 @@
-pub trait Expr {}
-
 #[derive(Debug)]
 pub struct ProgramExpr {
   pub id: Box<IdExpr>,

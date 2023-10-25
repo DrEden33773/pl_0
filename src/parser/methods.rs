@@ -1,11 +1,7 @@
 #![allow(dead_code)]
 
-use crate::ast::{
-  AopExpr, BlockExpr, BodyExpr, ConstDeclExpr, ConstExpr, ExpExpr, FactorExpr, IdExpr, IntegerExpr,
-  LExpExpr, LopExpr, MopExpr, ProcExpr, StatementExpr, TermExpr, VarDeclExpr,
-};
-
 use super::*;
+use crate::ast::*;
 
 impl<'a> Parser<'a> {
   /// ```bnf
@@ -26,7 +22,7 @@ impl<'a> Parser<'a> {
     } else {
       self.lexer.panic_compile_error(
         CompileError::syntax_error_template(),
-        "Expected <id> token, but not found!".to_string(),
+        "Expected <id> syntax_unit, but not found!".to_string(),
       )
     }
   }
@@ -39,7 +35,7 @@ impl<'a> Parser<'a> {
     } else {
       self.lexer.panic_compile_error(
         CompileError::syntax_error_template(),
-        "Expected <integer> token, but not found!".to_string(),
+        "Expected <integer> syntax_unit, but not found!".to_string(),
       )
     }
   }
@@ -117,7 +113,7 @@ impl<'a> Parser<'a> {
   }
 
   /// ```bnf
-  /// <proc> -> procedure <id> ( [<id> {, <id>}] ) ; <block> {; <proc>}
+  /// <proc> -> procedure <id> ([<id> {, <id>}]) ; <block> {; <proc>}
   fn parse_proc(&mut self) -> ProcExpr {
     self.lexer.consume_next(Token::Procedure);
     let id = self.parse_id().into();
@@ -168,12 +164,12 @@ impl<'a> Parser<'a> {
   /// <statement> -> <id> := <exp>
   ///               | if <l-exp> then <statement> [else <statement>]
   ///               | while <l-exp> do <statement>
-  ///               | call <id> ( [<exp> {, <exp>}] )
-  ///               | read ( <id> {, <id>} )
-  ///               | write ( <exp> {, <exp>} )
+  ///               | call <id> ([<exp> {, <exp>}])
+  ///               | read (<id> {, <id>})
+  ///               | write (<exp> {, <exp>})
   ///               | <body>
-  ///               | read ( <id> {, <id>} )
-  ///               | write ( <exp> {, <exp>} )
+  ///               | read (<id> {, <id>})
+  ///               | write (<exp> {, <exp>})
   fn parse_statement(&mut self) -> StatementExpr {
     match self.lexer.peek() {
       Some(token) => match token {
@@ -206,10 +202,10 @@ impl<'a> Parser<'a> {
           let id = self.parse_id().into();
           self.lexer.consume_next(Token::ParL);
           let mut args = vec![];
-          // ( [<exp>] )
+          // ([<exp>])
           if !self.lexer.match_next(Token::ParR) {
             args.push(self.parse_exp().into());
-            // ( [<exp> {, <exp>}] )
+            // ([<exp> {, <exp>}])
             while self.lexer.match_next(Token::Comma) {
               self.lexer.consume_next(Token::Comma);
               args.push(self.parse_exp().into());
@@ -223,7 +219,7 @@ impl<'a> Parser<'a> {
           self.lexer.consume_next(Token::ParL);
           let mut ids = vec![];
           ids.push(self.parse_id().into());
-          // ( <id> {, <id>} )
+          // (<id> {, <id>})
           while self.lexer.match_next(Token::Comma) {
             self.lexer.consume_next(Token::Comma);
             ids.push(self.parse_id().into());
@@ -236,7 +232,7 @@ impl<'a> Parser<'a> {
           self.lexer.consume_next(Token::ParL);
           let mut exps = vec![];
           exps.push(self.parse_exp().into());
-          // ( <exp> {, <exp>} )
+          // (<exp> {, <exp>})
           while self.lexer.match_next(Token::Comma) {
             self.lexer.consume_next(Token::Comma);
             exps.push(self.parse_exp().into());
@@ -259,7 +255,7 @@ impl<'a> Parser<'a> {
           self.lexer.panic_compile_error(
             CompileError::syntax_error_template(),
             format!(
-              "Expected a <statement> syntax_unit, but got an illegal token `{:?}`",
+              "Expected <statement> syntax_unit, but got an unmatchable token `{:?}`",
               unexpected_token
             ),
           );
@@ -267,7 +263,7 @@ impl<'a> Parser<'a> {
       },
       None => self.lexer.panic_compile_error(
         CompileError::syntax_error_template(),
-        "Expected a <statement> syntax_unit, but got `None`".to_string(),
+        "Expected <statement> syntax_unit, but got `None`".to_string(),
       ),
     }
   }
@@ -345,13 +341,15 @@ impl<'a> Parser<'a> {
       let integer = self.parse_integer().into();
       FactorExpr::Integer(integer)
     } else {
-      let unexpected_token = self.lexer.peek().cloned();
-      self
-        .lexer
-        .panic_compile_error(CompileError::syntax_error_template(), format!(
-          "Expected `<id>` / `<integer>` / `(<exp>)` syntax_unit, but got `{:?}` token which cannot match above",
+      // BUG: `self.lexer.next()` / `self.lexer.peek().cloned()`, which one?
+      let unexpected_token = self.lexer.next();
+      self.lexer.panic_compile_error(
+        CompileError::syntax_error_template(),
+        format!(
+          "Expected <id> / <integer> / (<exp>) syntax_unit, but got an unmatchable token `{:?}`",
           unexpected_token
-        ))
+        ),
+      )
     }
   }
 
@@ -371,7 +369,7 @@ impl<'a> Parser<'a> {
           self.lexer.panic_compile_error(
             CompileError::syntax_error_template(),
             format!(
-              "Expected a <lop> syntax_unit, but got an illegal token `{:?}`",
+              "Expected <lop> syntax_unit, but got an unmatchable token `{:?}`",
               unexpected_token
             ),
           );
@@ -380,7 +378,7 @@ impl<'a> Parser<'a> {
       None => {
         self.lexer.panic_compile_error(
           CompileError::syntax_error_template(),
-          "Expected a <statement> syntax_unit, but got an illegal token `None`".to_string(),
+          "Expected <statement> syntax_unit, but got `None`".to_string(),
         );
       }
     }
@@ -396,9 +394,13 @@ impl<'a> Parser<'a> {
       self.lexer.consume_next(Token::Sub);
       AopExpr::Sub
     } else {
+      let unexpected_token = self.lexer.next();
       self.lexer.panic_compile_error(
         CompileError::syntax_error_template(),
-        "Expected an <aop> syntax_unit, but got `None`".to_string(),
+        format!(
+          "Expected <aop> syntax_unit, but got an unmatchable token `{:?}`",
+          unexpected_token
+        ),
       );
     }
   }
@@ -413,9 +415,13 @@ impl<'a> Parser<'a> {
       self.lexer.consume_next(Token::Div);
       MopExpr::Div
     } else {
+      let unexpected_token = self.lexer.next();
       self.lexer.panic_compile_error(
         CompileError::syntax_error_template(),
-        "Expected an <mop> syntax_unit, but got `None`".to_string(),
+        format!(
+          "Expected <mop> syntax_unit, but got an unmatchable token `{:?}`",
+          unexpected_token
+        ),
       );
     }
   }
