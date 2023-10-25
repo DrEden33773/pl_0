@@ -3,6 +3,7 @@
 mod methods;
 
 use crate::{
+  ast::ProgramExpr,
   error::compile_error::CompileError,
   lexer::{token_def::Token, Lexer, LexerIterator},
 };
@@ -41,12 +42,14 @@ impl<'a> Lexer<'a> {
 #[derive(Debug)]
 pub struct Parser<'a> {
   lexer: Lexer<'a>,
+  ast_entry: Option<Box<ProgramExpr>>,
 }
 
 impl<'a> Parser<'a> {
   pub fn new(ctx: &'a str) -> Self {
     Self {
       lexer: Lexer::new(ctx),
+      ast_entry: None,
     }
   }
 

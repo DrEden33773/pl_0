@@ -9,6 +9,7 @@
     "Idiv",
     "NARRAY",
     "NMAP",
+    "procs",
     "Proto",
     "rint",
     "rlox",
