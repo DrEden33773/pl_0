@@ -99,6 +99,7 @@ impl<'a> Lexer<'a> {
         CompileError::lexical_error_template(),
         format!("'{c}' is not an ASCII character"),
       );
+      '\0'
     }
   }
 
@@ -176,6 +177,7 @@ impl<'a> Lexer<'a> {
               CompileError::lexical_error_template(),
               format!("'{c}' is an undefined sign, did you mean ':='?"),
             );
+            None
           }
         },
         '0'..='9' => self.lexing_integer(c),

@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 #[cfg(test)]
 use pl_0::lexer::Lexer;
-use pl_0::parser::Parser;
+use pl_0::{parser::Parser, pest_parser::PestParser};
 use project_root::get_project_root;
 use std::{env::args, fs::File, io::Read};
 
@@ -10,7 +10,7 @@ static PROJECT_ROOT: Lazy<String> =
   Lazy::new(|| get_project_root().unwrap().to_str().unwrap().to_string());
 
 fn compile_from_file(src: &str) {
-  std::env::set_current_dir(PROJECT_ROOT.as_str()).unwrap();
+  // std::env::set_current_dir(PROJECT_ROOT.as_str()).unwrap();
   let mut string_buf = String::new();
   File::open(src)
     .unwrap()
@@ -21,8 +21,17 @@ fn compile_from_file(src: &str) {
   parser.show_ugly_ast();
 }
 
+#[allow(dead_code)]
+fn compile_from_file_with_pest(src: &str) {
+  use pest::Parser;
+  let unparsed_file = std::fs::read_to_string(src).expect("cannot read source file");
+  let _ast_node = PestParser::parse(pl_0::pest_parser::Rule::prog, &unparsed_file)
+    .unwrap_or_else(|e| panic!("{e}"));
+}
+
 fn main() {
   if let [_, source, ..] = &ARGS[..] {
+    // compile_from_file_with_pest((PROJECT_ROOT.to_string() + source.as_str()).as_str());
     compile_from_file((PROJECT_ROOT.to_string() + source.as_str()).as_str());
   } else {
     println!("Usage: {} <source_path>", ARGS[0]);

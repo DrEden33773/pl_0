@@ -18,8 +18,6 @@
               | if <l-exp> then <statement> [else <statement>]
               | while <l-exp> do <statement>
               | call <id> ([<exp> {, <exp>}])
-              | read (<id> {, <id>})
-              | write (<exp> {, <exp>})
               | <body>
               | read (<id> {, <id>})
               | write (<exp> {, <exp>})

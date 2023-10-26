@@ -68,13 +68,6 @@ impl<'a> Lexer<'a> {
       if c.is_ascii_digit() {
         self.next_char();
         scanned = scanned * 10 + c.to_digit(10).unwrap() as i64;
-      } else if !c.is_whitespace() {
-        self.panic_compile_error(
-          CompileError::lexical_error_template(),
-          format!("'{first}' is not a digit"),
-        );
-        self.sync_to_curr_token_last_char();
-        return None;
       } else {
         break;
       }

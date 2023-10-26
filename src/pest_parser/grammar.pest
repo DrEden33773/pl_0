@@ -1,0 +1,44 @@
+prog       = { SOI ~ PROGRAM ~ id ~ ";" ~ block ~ EOI }
+block      = { ws* ~ const_decl? ~ var_decl? ~ proc? ~ body ~ ws* }
+const_decl = { ws* ~ CONST ~ const ~ ("," ~ const)* ~ ";" ~ ws* }
+const      = { ws* ~ id ~ ":=" ~ integer ~ ws* }
+var_decl   = { ws* ~ VAR ~ id ~ ("," ~ id)* ~ ";" ~ ws* }
+proc       = { ws* ~ PROCEDURE ~ id ~ "(" ~ (id ~ ("," ~ id)*)? ~ ")" ~ ";" ~ block ~ (";" ~ proc)* ~ ws* }
+body       = { ws* ~ BEGIN ~ statement ~ (";" ~ statement)* ~ END ~ ws* }
+statement  = { ws* ~ stmt ~ ws* }
+stmt       = {
+    (id ~ ":=" ~ exp)
+  | (IF ~ l_exp ~ THEN ~ statement ~ (ELSE ~ statement)?)
+  | (WHILE ~ l_exp ~ DO ~ statement)
+  | (CALL ~ id ~ "(" ~ (exp ~ ("," ~ exp)*)? ~ ")")
+  | body
+  | (READ ~ "(" ~ id ~ ("," ~ id)* ~ ")")
+  | (WRITE ~ "(" ~ exp ~ ("," ~ exp)* ~ ")")
+}
+l_exp      = { ws* ~ (exp ~ lop ~ exp) | (ODD ~ exp) ~ ws* }
+exp        = { ws* ~ aop? ~ term ~ (aop ~ term)* ~ ws* }
+term       = { ws* ~ factor ~ (mop ~ factor)* ~ ws* }
+factor     = { ws* ~ ("(" ~ exp ~ ")" | integer | id) ~ ws* }
+lop        = { ws* ~ ("=" | "<>" | "<" | "<=" | ">" | ">=") ~ ws* }
+aop        = { ws* ~ ("+" | "-") ~ ws* }
+mop        = { ws* ~ ("*" | "/") ~ ws* }
+id         = { ws* ~ letter ~ (letter | digit)* ~ ws* }
+integer    = { ws* ~ digit ~ (digit)* ~ ws* }
+letter     = { 'a'..'z' | 'A'..'Z' }
+digit      = { '0'..'9' }
+CONST      = { "const" ~ ws+ }
+PROGRAM    = { "program" ~ ws+ }
+VAR        = { "var" ~ ws+ }
+PROCEDURE  = { "procedure" ~ ws+ }
+BEGIN      = { "begin" ~ ws+ }
+END        = { "end" ~ ws* }
+IF         = { "if" ~ ws+ }
+THEN       = { "then" ~ ws+ }
+ELSE       = { "else" ~ ws+ }
+WHILE      = { "while" ~ ws+ }
+DO         = { "do" ~ ws+ }
+CALL       = { "call" ~ ws+ }
+READ       = { "read" ~ ws* }
+WRITE      = { "write" ~ ws* }
+ODD        = { "odd" ~ ws+ }
+ws         = { WHITE_SPACE }
