@@ -39,8 +39,8 @@ impl<'a> Lexer<'a> {
           CompileError::lexical_error_template(),
           "'_' is not supported for identifier declaration".to_string(),
         );
-        self.sync_to_curr_token_last_char();
-        return None;
+        // self.sync_to_curr_token_last_char();
+        // return None;
       } else {
         break;
       }
@@ -59,8 +59,8 @@ impl<'a> Lexer<'a> {
         CompileError::lexical_error_template(),
         format!("'{first}' is not a digit"),
       );
-      self.sync_to_curr_token_last_char();
-      return None;
+      // self.sync_to_curr_token_last_char();
+      // return None;
     }
     let mut scanned = first.to_digit(10).unwrap() as i64;
     loop {

@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 #[cfg(test)]
 use pl_0::lexer::Lexer;
-use pl_0::{parser::Parser, pest_parser::PestParser};
+use pl_0::{parser::Parser, pest_parser::PestParser, SEP};
 use project_root::get_project_root;
 use std::{env::args, fs::File, io::Read};
 
@@ -23,10 +23,14 @@ fn compile_from_file(src: &str) {
 
 #[allow(dead_code)]
 fn compile_from_file_with_pest(src: &str) {
-  use pest::Parser;
   let unparsed_file = std::fs::read_to_string(src).expect("cannot read source file");
-  let _ast_node = PestParser::parse(pl_0::pest_parser::Rule::prog, &unparsed_file)
-    .unwrap_or_else(|e| panic!("{e}"));
+  let ast = PestParser::parse_content(&unparsed_file);
+  println!("AST:");
+  println!("{}", SEP.as_str());
+  match ast {
+    Some(ast) => println!("{ast:?}"),
+    None => println!("None"),
+  }
 }
 
 fn main() {

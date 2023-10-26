@@ -36,7 +36,7 @@ impl<'a> Lexer<'a> {
         CompileError::syntax_error_template(),
         format!("Expected `{:?}`, but got `None`", token),
       );
-      false
+      // false
     }
   }
 }
