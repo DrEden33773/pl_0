@@ -22,7 +22,6 @@ static KEYWORDS: Lazy<HashMap<&str, Token>> = Lazy::new(|| {
     ("odd", Token::Odd),
   ]
   .into_iter()
-  .map(|(k, v)| (k, v))
   .collect()
 });
 
