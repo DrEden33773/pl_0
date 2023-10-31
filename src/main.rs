@@ -65,11 +65,10 @@ mod demo {
   #[test]
   #[should_panic]
   fn parser_demo() {
-    Parser::new(&file_to_string(
-      PROJECT_ROOT.to_string() + "/examples/lexer/one_plus_two.pas",
-    ))
-    .parse()
-    .show_ast();
+    let ctx = &file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/one_plus_two.pas");
+    let mut parser = Parser::new(ctx);
+    parser.parse();
+    parser.show_ast();
   }
 
   #[test]
