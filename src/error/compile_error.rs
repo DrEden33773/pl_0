@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use super::traits::ErrorTrait;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub enum CompileErrorType {
   LexicalError,
   SyntaxError,
@@ -20,7 +20,7 @@ impl Display for CompileErrorType {
   }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct CompileError {
   pub line: usize,
   pub col: usize,

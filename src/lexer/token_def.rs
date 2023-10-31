@@ -1,3 +1,5 @@
+use crate::error::compile_error::CompileError;
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Token {
   /* keywords */
@@ -39,4 +41,12 @@ pub enum Token {
   Integer(i64),
   /* EOS */
   Eos,
+  /* Error */
+  Error(CompileError),
+}
+
+impl From<CompileError> for Token {
+  fn from(err: CompileError) -> Self {
+    Self::Error(err)
+  }
 }

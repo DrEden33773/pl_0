@@ -18,7 +18,7 @@ fn compile_from_file(src: &str) {
     .unwrap();
   let mut parser = Parser::new(&string_buf);
   parser.parse();
-  parser.show_ugly_ast();
+  parser.show_ast();
 }
 
 #[allow(dead_code)]
@@ -64,33 +64,51 @@ mod demo {
 
   #[test]
   #[should_panic]
+  fn parser_demo() {
+    Parser::new(&file_to_string(
+      PROJECT_ROOT.to_string() + "/examples/lexer/one_plus_two.pas",
+    ))
+    .parse()
+    .show_ast();
+  }
+
+  #[test]
+  #[should_panic]
   fn chinese_character_demo() {
-    Lexer::dbg_one_pass(&file_to_string(
-      PROJECT_ROOT.to_string() + "/examples/lexer/chinese_programming.pas",
-    ));
+    let content =
+      file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/chinese_programming.pas");
+    let mut parser = Parser::new(&content);
+    parser.parse();
+    parser.show_ast();
   }
 
   #[test]
   #[should_panic]
   fn single_colon_demo() {
-    Lexer::dbg_one_pass(&file_to_string(
+    Parser::new(&file_to_string(
       PROJECT_ROOT.to_string() + "/examples/lexer/single_colon.pas",
-    ));
+    ))
+    .parse()
+    .show_ast();
   }
 
   #[test]
   #[should_panic]
   fn unsupported_ascii_char_demo() {
-    Lexer::dbg_one_pass(&file_to_string(
+    Parser::new(&file_to_string(
       PROJECT_ROOT.to_string() + "/examples/lexer/unsupported_ascii_char.pas",
-    ));
+    ))
+    .parse()
+    .show_ast();
   }
 
   #[test]
   #[should_panic]
   fn malformed_char_demo() {
-    Lexer::dbg_one_pass(&file_to_string(
+    Parser::new(&file_to_string(
       PROJECT_ROOT.to_string() + "/examples/lexer/japanese_programming.pas",
-    ));
+    ))
+    .parse()
+    .show_ast();
   }
 }

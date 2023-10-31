@@ -17,7 +17,8 @@ impl<'a> Parser<'a> {
   /// ```bnf
   /// <id> -> @letter { @letter | @digit }
   fn parse_id(&mut self) -> IdExpr {
-    if let Some(Token::Identifier(id)) = self.lexer.next() {
+    let (is_matched, id) = self.lexer.match_next_identifier();
+    if is_matched {
       IdExpr(id)
     } else {
       self.lexer.panic_compile_error(
@@ -30,7 +31,8 @@ impl<'a> Parser<'a> {
   /// ```bnf
   /// <integer> -> @digit { @digit }
   fn parse_integer(&mut self) -> IntegerExpr {
-    if let Some(Token::Integer(integer)) = self.lexer.next() {
+    let (is_matched, integer) = self.lexer.match_next_integer();
+    if is_matched {
       IntegerExpr(integer)
     } else {
       self.lexer.panic_compile_error(

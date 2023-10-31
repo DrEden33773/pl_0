@@ -30,6 +30,11 @@ impl<'a> Lexer<'a> {
     let mut identifier = format!("{first}");
     loop {
       let c = self.peek_char();
+      match c.is_err() {
+        true => return c.unwrap_err().into(),
+        false => (),
+      }
+      let c = c.unwrap();
       if c.is_alphanumeric() {
         self.next_char();
         identifier.push(c);
@@ -64,6 +69,11 @@ impl<'a> Lexer<'a> {
     let mut scanned = first.to_digit(10).unwrap() as i64;
     loop {
       let c = self.peek_char();
+      match c.is_err() {
+        true => return c.unwrap_err().into(),
+        false => (),
+      }
+      let c = c.unwrap();
       if c.is_ascii_digit() {
         self.next_char();
         scanned = scanned * 10 + c.to_digit(10).unwrap() as i64;
