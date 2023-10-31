@@ -63,6 +63,14 @@ mod demo {
   }
 
   #[test]
+  fn parser_demo() {
+    let ctx = &file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/one_plus_two.pas");
+    let mut parser = Parser::new(ctx);
+    parser.parse();
+    parser.show_ugly_ast();
+  }
+
+  #[test]
   #[should_panic]
   fn chinese_character_demo() {
     Lexer::dbg_one_pass(&file_to_string(
