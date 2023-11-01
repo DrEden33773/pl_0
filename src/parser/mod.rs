@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+// #![allow(dead_code)]
 
 mod methods;
 
@@ -9,67 +9,6 @@ use crate::{
   SEP,
 };
 
-impl<'a> Lexer<'a> {
-  fn consume_next(&mut self, token: Token) -> Result<(), ()> {
-    if let Some(t) = self.next() {
-      if let Token::LexicalError(err) = t.to_owned() {
-        eprintln!("{}", err);
-        return Err(());
-      }
-      if t != token {
-        self.panic_compile_error(
-          CompileError::syntax_error_template(),
-          format!("Expected `{}`, but got `{}`", token, t),
-        );
-      }
-    }
-    Ok(())
-  }
-
-  fn match_next(&mut self, token: Token) -> Result<bool, bool> {
-    if let Some(t) = self.peek() {
-      if let Token::LexicalError(err) = t.to_owned() {
-        eprintln!("{}", err);
-        Err(false)
-      } else {
-        Ok(*t == token)
-      }
-    } else {
-      Err(false)
-    }
-  }
-
-  fn consume_next_identifier(&mut self) -> Result<Result<String, ()>, Result<String, ()>> {
-    if let Some(t) = self.next() {
-      if let Token::LexicalError(err) = t {
-        eprintln!("{}", err);
-        Err(Err(()))
-      } else if let Token::Identifier(id) = t {
-        Ok(Ok(id.to_owned()))
-      } else {
-        Ok(Err(()))
-      }
-    } else {
-      Err(Err(()))
-    }
-  }
-
-  fn consume_next_integer(&mut self) -> Result<Result<i64, ()>, Result<i64, ()>> {
-    if let Some(t) = self.next() {
-      if let Token::LexicalError(err) = t {
-        eprintln!("{}", err);
-        Err(Err(()))
-      } else if let Token::Integer(num) = t {
-        Ok(Ok(num))
-      } else {
-        Ok(Err(()))
-      }
-    } else {
-      Err(Err(()))
-    }
-  }
-}
-
 #[derive(Debug)]
 pub struct Parser<'a> {
   lexer: Lexer<'a>,
@@ -79,39 +18,74 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
   fn consume_next(&mut self, token: Token) {
-    match self.lexer.consume_next(token) {
-      Ok(_) => {}
-      Err(_) => self.has_error = true,
+    if let Some(t) = self.lexer.peek() {
+      if let Token::LexicalError(err) = t.to_owned() {
+        eprintln!("{}", err);
+        self.has_error = true;
+      } else if *t != token {
+        let unexpected_t = t.to_owned();
+        self.lexer.panic_compile_error(
+          CompileError::syntax_error_template(),
+          format!("Expected `{}`, but got `{}`", token, unexpected_t),
+        );
+      } else {
+        self.lexer.next();
+      }
+    } else {
+      self.has_error = true;
     }
   }
 
   fn match_next(&mut self, token: Token) -> bool {
-    match self.lexer.match_next(token) {
-      Ok(res) => res,
-      Err(res) => {
+    if let Some(t) = self.lexer.peek() {
+      if let Token::LexicalError(err) = t.to_owned() {
+        eprintln!("{}", err);
         self.has_error = true;
-        res
+        false
+      } else {
+        *t == token
       }
+    } else {
+      self.has_error = true;
+      false
     }
   }
 
   fn consume_next_identifier(&mut self) -> Result<String, ()> {
-    match self.lexer.consume_next_identifier() {
-      Ok(res) => res,
-      Err(res) => {
+    if let Some(t) = self.lexer.peek() {
+      if let Token::LexicalError(err) = t {
+        eprintln!("{}", err);
         self.has_error = true;
-        res
+        Err(())
+      } else if let Token::Identifier(id) = t {
+        let id = id.to_owned();
+        self.lexer.next();
+        Ok(id.to_owned())
+      } else {
+        Err(())
       }
+    } else {
+      self.has_error = true;
+      Err(())
     }
   }
 
   fn consume_next_integer(&mut self) -> Result<i64, ()> {
-    match self.lexer.consume_next_integer() {
-      Ok(res) => res,
-      Err(res) => {
+    if let Some(t) = self.lexer.peek() {
+      if let Token::LexicalError(err) = t {
+        eprintln!("{}", err);
         self.has_error = true;
-        res
+        Err(())
+      } else if let Token::Integer(num) = t {
+        let num = num.to_owned();
+        self.lexer.next();
+        Ok(num)
+      } else {
+        Err(())
       }
+    } else {
+      self.has_error = true;
+      Err(())
     }
   }
 }
