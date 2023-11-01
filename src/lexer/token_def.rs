@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::error::compile_error::CompileError;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -42,11 +44,20 @@ pub enum Token {
   /* EOS */
   Eos,
   /* Error */
-  Error(CompileError),
+  LexicalError(CompileError),
+}
+
+impl Display for Token {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      Self::LexicalError(_) => write!(f, "LexicalErrorToken"),
+      _ => write!(f, "{:?}", self),
+    }
+  }
 }
 
 impl From<CompileError> for Token {
   fn from(err: CompileError) -> Self {
-    Self::Error(err)
+    Self::LexicalError(err)
   }
 }

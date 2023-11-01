@@ -1,5 +1,5 @@
 use self::token_def::Token;
-use crate::error::{compile_error::CompileError, error_builder::CompileErrorBuilder, PL0Error};
+use crate::error::{compile_error::CompileError, error_builder::CompileErrorBuilder};
 use std::{iter::Peekable, str::Chars};
 
 #[cfg(not(feature = "debug"))]
@@ -19,7 +19,6 @@ pub struct Lexer<'a> {
   ahead: Option<Token>,
   line_num: usize,
   col_num: usize,
-  lexical_errors: Vec<PL0Error>,
 }
 
 impl<'a> Iterator for Lexer<'a> {
@@ -54,9 +53,7 @@ impl<'a> Lexer<'a> {
     error_template.line = self.line_num;
     error_template.col = self.col_num;
     error_template.info = message;
-    let pl0error: PL0Error = error_template.into();
-    self.lexical_errors.push(pl0error.to_owned());
-    panic!("{}", pl0error);
+    panic!("{}", error_template);
   }
 }
 
@@ -148,11 +145,11 @@ impl<'a> Lexer<'a> {
               self.next_char();
               Some(Token::EqSign)
             }
-            _ => Some(Token::Error(
+            _ => Some(Token::LexicalError(
               CompileErrorBuilder::lexical_error_template()
                 .with_line(self.line_num)
                 .with_col(self.col_num)
-                .with_info(format!("'{c}' is an undefined sign, did you mean ':='?"))
+                .with_info("':' is an undefined sign, did you mean ':='?".to_string())
                 .build(),
             )),
           },
@@ -160,14 +157,14 @@ impl<'a> Lexer<'a> {
         },
         '0'..='9' => self.lexing_integer(c),
         'a'..='z' | 'A'..='Z' => self.lexing_identifier(c),
-        c if !c.is_ascii() => Some(Token::Error(
+        c if !c.is_ascii() => Some(Token::LexicalError(
           CompileErrorBuilder::lexical_error_template()
             .with_line(self.line_num)
             .with_col(self.col_num)
             .with_info(format!("'{}' is not an ASCII character", c))
             .build(),
         )),
-        _ => Some(Token::Error(
+        _ => Some(Token::LexicalError(
           CompileErrorBuilder::lexical_error_template()
             .with_line(self.line_num)
             .with_col(self.col_num)
@@ -188,7 +185,6 @@ impl<'a> Lexer<'a> {
       ahead: None,
       line_num: 1,
       col_num: 0, // MUST be zero!
-      lexical_errors: vec![],
     }
   }
 }

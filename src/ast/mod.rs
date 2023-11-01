@@ -1,10 +1,10 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProgramExpr {
   pub id: Box<IdExpr>,
   pub block: Box<BlockExpr>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BlockExpr {
   pub const_decl: Option<Box<ConstDeclExpr>>,
   pub var_decl: Option<Box<VarDeclExpr>>,
@@ -12,23 +12,23 @@ pub struct BlockExpr {
   pub body: Box<BodyExpr>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ConstDeclExpr {
   pub constants: Vec<Box<ConstExpr>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ConstExpr {
   pub id: Box<IdExpr>,
   pub integer: Box<IntegerExpr>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VarDeclExpr {
   pub ids: Vec<Box<IdExpr>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProcExpr {
   pub id: Box<IdExpr>,
   pub args: Vec<Box<IdExpr>>,
@@ -36,12 +36,12 @@ pub struct ProcExpr {
   pub procs: Vec<Box<ProcExpr>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BodyExpr {
   pub statements: Vec<Box<StatementExpr>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum StatementExpr {
   Id {
     id: Box<IdExpr>,
@@ -71,7 +71,7 @@ pub enum StatementExpr {
   },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum LExpExpr {
   Exp {
     l_exp: Box<ExpExpr>,
@@ -83,27 +83,27 @@ pub enum LExpExpr {
   },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ExpExpr {
   pub is_negative: bool,
   pub term: Box<TermExpr>,
   pub aop_terms: Vec<(Box<AopExpr>, Box<TermExpr>)>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TermExpr {
   pub factor: Box<FactorExpr>,
   pub mop_factors: Vec<(Box<MopExpr>, Box<FactorExpr>)>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FactorExpr {
   Id(Box<IdExpr>),
   Integer(Box<IntegerExpr>),
   Exp(Box<ExpExpr>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum LopExpr {
   Eq,
   Ne,
@@ -113,20 +113,20 @@ pub enum LopExpr {
   Ge,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum AopExpr {
   Add,
   Sub,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum MopExpr {
   Mul,
   Div,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IdExpr(pub String);
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct IntegerExpr(pub i64);
