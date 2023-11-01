@@ -110,4 +110,14 @@ mod demo {
     .parse()
     .show_ast();
   }
+
+    #[test]
+  #[should_panic]
+  fn losing_prog_id_demo() {
+    Parser::new(&file_to_string(
+      PROJECT_ROOT.to_string() + "/examples/parser/losing_prog_id.pas",
+    ))
+    .parse()
+    .show_ast();
+  }
 }

@@ -17,28 +17,24 @@ impl<'a> Parser<'a> {
   /// ```bnf
   /// <id> -> @letter { @letter | @digit }
   fn parse_id(&mut self) -> IdExpr {
-    let (is_matched, id) = self.consume_next_identifier();
-    if is_matched {
-      IdExpr(id)
-    } else {
-      self.lexer.panic_compile_error(
+    match self.consume_next_identifier() {
+      Ok(id) => IdExpr(id),
+      Err(_) => self.lexer.panic_compile_error(
         CompileError::syntax_error_template(),
         "Expected <id> syntax_unit, but not found!".to_string(),
-      )
+      ),
     }
   }
 
   /// ```bnf
   /// <integer> -> @digit { @digit }
   fn parse_integer(&mut self) -> IntegerExpr {
-    let (is_matched, integer) = self.consume_next_integer();
-    if is_matched {
-      IntegerExpr(integer)
-    } else {
-      self.lexer.panic_compile_error(
+    match self.consume_next_integer() {
+      Ok(integer) => IntegerExpr(integer),
+      Err(_) => self.lexer.panic_compile_error(
         CompileError::syntax_error_template(),
         "Expected <integer> syntax_unit, but not found!".to_string(),
-      )
+      ),
     }
   }
 

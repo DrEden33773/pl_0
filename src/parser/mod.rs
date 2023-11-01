@@ -47,15 +47,15 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  fn consume_next_identifier(&mut self) -> Result<(bool, String), (bool, String)> {
+  fn consume_next_identifier(&mut self) -> Result<Result<String, ()>, Result<String, ()>> {
     if let Some(t) = self.next() {
       if let Token::LexicalError(err) = t {
         eprintln!("{}", err);
-        Err((false, String::new()))
+        Err(Err(()))
       } else if let Token::Identifier(id) = t {
-        Ok((true, id.to_owned()))
+        Ok(Ok(id.to_owned()))
       } else {
-        Ok((false, String::new()))
+        Ok(Err(()))
       }
     } else {
       self.panic_compile_error(
@@ -65,15 +65,15 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  fn consume_next_integer(&mut self) -> Result<(bool, i64), (bool, i64)> {
+  fn consume_next_integer(&mut self) -> Result<Result<i64, ()>, Result<i64, ()>> {
     if let Some(t) = self.next() {
       if let Token::LexicalError(err) = t {
         eprintln!("{}", err);
-        Err((false, 0))
+        Err(Err(()))
       } else if let Token::Integer(num) = t {
-        Ok((true, num))
+        Ok(Ok(num))
       } else {
-        Ok((false, 0))
+        Ok(Err(()))
       }
     } else {
       self.panic_compile_error(
@@ -109,7 +109,7 @@ impl<'a> Parser<'a> {
     }
   }
 
-  fn consume_next_identifier(&mut self) -> (bool, String) {
+  fn consume_next_identifier(&mut self) -> Result<String, ()> {
     match self.lexer.consume_next_identifier() {
       Ok(res) => res,
       Err(res) => {
@@ -119,7 +119,7 @@ impl<'a> Parser<'a> {
     }
   }
 
-  fn consume_next_integer(&mut self) -> (bool, i64) {
+  fn consume_next_integer(&mut self) -> Result<i64, ()> {
     match self.lexer.consume_next_integer() {
       Ok(res) => res,
       Err(res) => {
