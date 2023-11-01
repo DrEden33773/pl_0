@@ -102,16 +102,16 @@ impl<'a> Parser<'a> {
   /// ```bnf
   /// <var-decl> -> var <id> {, <id>} ;
   fn parse_var_decl(&mut self) -> VarDeclExpr {
-    let mut ids = vec![];
+    let mut id_list = vec![];
     self.consume_next(Token::Var);
-    ids.push(self.parse_id().into());
+    id_list.push(self.parse_id().into());
     // {, <id>}
     while self.match_next(Token::Comma) {
       self.consume_next(Token::Comma);
-      ids.push(self.parse_id().into());
+      id_list.push(self.parse_id().into());
     }
     self.consume_next(Token::Semicolon);
-    VarDeclExpr { ids }
+    VarDeclExpr { id_list }
   }
 
   /// ```bnf
@@ -219,15 +219,15 @@ impl<'a> Parser<'a> {
         Token::Read => {
           self.consume_next(Token::Read);
           self.consume_next(Token::ParL);
-          let mut ids = vec![];
-          ids.push(self.parse_id().into());
+          let mut id_list = vec![];
+          id_list.push(self.parse_id().into());
           // (<id> {, <id>})
           while self.match_next(Token::Comma) {
             self.consume_next(Token::Comma);
-            ids.push(self.parse_id().into());
+            id_list.push(self.parse_id().into());
           }
           self.consume_next(Token::ParR);
-          StatementExpr::Read { ids }
+          StatementExpr::Read { id_list }
         }
         Token::Write => {
           self.consume_next(Token::Write);

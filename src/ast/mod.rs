@@ -25,7 +25,7 @@ pub struct ConstExpr {
 
 #[derive(Debug, Clone)]
 pub struct VarDeclExpr {
-  pub ids: Vec<Box<IdExpr>>,
+  pub id_list: Vec<Box<IdExpr>>,
 }
 
 #[derive(Debug, Clone)]
@@ -64,7 +64,7 @@ pub enum StatementExpr {
     body: Box<BodyExpr>,
   },
   Read {
-    ids: Vec<Box<IdExpr>>,
+    id_list: Vec<Box<IdExpr>>,
   },
   Write {
     exps: Vec<Box<ExpExpr>>,
