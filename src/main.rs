@@ -63,7 +63,6 @@ mod demo {
   }
 
   #[test]
-  #[should_panic]
   fn parser_demo() {
     let ctx = &file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/one_plus_two.pas");
     let mut parser = Parser::new(ctx);
@@ -111,7 +110,7 @@ mod demo {
     .show_ast();
   }
 
-    #[test]
+  #[test]
   #[should_panic]
   fn losing_prog_id_demo() {
     Parser::new(&file_to_string(

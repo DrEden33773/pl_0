@@ -22,13 +22,8 @@ impl<'a> Lexer<'a> {
           format!("Expected `{}`, but got `{}`", token, t),
         );
       }
-      Ok(())
-    } else {
-      self.panic_compile_error(
-        CompileError::syntax_error_template(),
-        format!("Expected `{}`, but got `None`", token),
-      );
     }
+    Ok(())
   }
 
   fn match_next(&mut self, token: Token) -> Result<bool, bool> {
@@ -40,10 +35,7 @@ impl<'a> Lexer<'a> {
         Ok(*t == token)
       }
     } else {
-      self.panic_compile_error(
-        CompileError::syntax_error_template(),
-        format!("Expected `{}`, but got `None`", token),
-      );
+      Err(false)
     }
   }
 
@@ -58,10 +50,7 @@ impl<'a> Lexer<'a> {
         Ok(Err(()))
       }
     } else {
-      self.panic_compile_error(
-        CompileError::syntax_error_template(),
-        "Expected <id>, but got `None`".to_string(),
-      );
+      Err(Err(()))
     }
   }
 
@@ -76,10 +65,7 @@ impl<'a> Lexer<'a> {
         Ok(Err(()))
       }
     } else {
-      self.panic_compile_error(
-        CompileError::syntax_error_template(),
-        "Expected <integer>, but got `None`".to_string(),
-      );
+      Err(Err(()))
     }
   }
 }
