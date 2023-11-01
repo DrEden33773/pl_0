@@ -343,7 +343,6 @@ impl<'a> Parser<'a> {
       let integer = self.parse_integer().into();
       FactorExpr::Integer(integer)
     } else {
-      // BUG: `self.lexer.next()` / `self.lexer.peek().cloned()`, which one?
       let unexpected_token = self.lexer.next();
       self.lexer.panic_compile_error(
         CompileError::syntax_error_template(),
