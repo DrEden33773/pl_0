@@ -522,7 +522,6 @@ impl<'a> Parser<'a> {
         Token::Ge => Some(Box::new(LopExpr::Ge)),
         Token::Ne => Some(Box::new(LopExpr::Ne)),
         _ => {
-          // BUG: wrong_if.pas
           let unexpected_token = token.to_owned();
           let err = CompileErrorBuilder::syntax_error_template()
             .with_lexer_ref(&self.lexer)
