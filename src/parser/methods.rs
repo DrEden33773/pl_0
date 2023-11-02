@@ -84,22 +84,22 @@ impl<'a> Parser<'a> {
   /// ```bnf
   /// <const-decl> -> const <const> {, <const>} ;
   fn parse_const_decl(&mut self) -> Option<Box<ConstDeclExpr>> {
+    let mut errored = false;
     let mut constants = vec![];
     self.consume_next(Token::Const);
     match self.parse_const() {
       Some(c) => constants.push(c),
-      None => return None,
+      None => errored = true,
     }
     // {, <const>}
-    let mut is_errored = false;
     while self.match_next(Token::Comma) {
       self.consume_next(Token::Comma);
       match self.parse_const() {
         Some(c) => constants.push(c),
-        None => is_errored = true,
+        None => errored = true,
       }
     }
-    if is_errored {
+    if errored {
       return None;
     }
     self.consume_next(Token::Semicolon);
@@ -123,21 +123,25 @@ impl<'a> Parser<'a> {
   /// ```bnf
   /// <var-decl> -> var <id> {, <id>} ;
   fn parse_var_decl(&mut self) -> Option<Box<VarDeclExpr>> {
+    let mut errored = false;
     let mut id_list = vec![];
     self.consume_next(Token::Var);
     match self.parse_id() {
       Some(id) => id_list.push(id),
-      None => return None,
+      None => errored = true,
     }
     // {, <id>}
     while self.match_next(Token::Comma) {
       self.consume_next(Token::Comma);
       match self.parse_id() {
         Some(id) => id_list.push(id),
-        None => return None,
+        None => errored = true,
       }
     }
     self.consume_next(Token::Semicolon);
+    if errored {
+      return None;
+    }
     Some(Box::new(VarDeclExpr { id_list }))
   }
 
@@ -148,19 +152,23 @@ impl<'a> Parser<'a> {
     let id = self.parse_id();
     self.consume_next(Token::ParL);
     let mut args: Vec<Box<IdExpr>> = vec![];
+    let mut errored = false;
     // [<id>]
     if !self.match_next(Token::ParR) {
       match self.parse_id() {
         Some(id) => args.push(id),
-        None => return None,
+        None => errored = true,
       }
       // [<id> {, <id>}]
       while self.match_next(Token::Comma) {
         self.consume_next(Token::Comma);
         match self.parse_id() {
           Some(id) => args.push(id),
-          None => return None,
+          None => errored = true,
         }
+      }
+      if errored {
+        return None;
       }
     }
     self.consume_next(Token::ParR);
@@ -172,8 +180,11 @@ impl<'a> Parser<'a> {
       self.consume_next(Token::Semicolon);
       match self.parse_proc() {
         Some(proc) => procs.push(proc),
-        None => return None,
+        None => errored = true,
       }
+    }
+    if errored {
+      return None;
     }
     if id.is_some() && block.is_some() {
       let (id, block) = (id.unwrap(), block.unwrap());
@@ -192,18 +203,22 @@ impl<'a> Parser<'a> {
   /// <body> -> begin <statement> {; <statement>} end
   fn parse_body(&mut self) -> Option<Box<BodyExpr>> {
     let mut statements = vec![];
+    let mut errored = false;
     self.consume_next(Token::Begin);
     match self.parse_statement() {
       Some(stmt) => statements.push(stmt),
-      None => return None,
+      None => errored = true,
     }
     // {; <statement>}
     while self.match_next(Token::Semicolon) {
       self.consume_next(Token::Semicolon);
       match self.parse_statement() {
         Some(stmt) => statements.push(stmt),
-        None => return None,
+        None => errored = true,
       }
+    }
+    if errored {
+      return None;
     }
     self.consume_next(Token::End);
     Some(Box::new(BodyExpr { statements }))
@@ -257,6 +272,7 @@ impl<'a> Parser<'a> {
           }
         }
         Token::Call => {
+          let mut errored = false;
           self.consume_next(Token::Call);
           let id = self.parse_id();
           self.consume_next(Token::ParL);
@@ -265,18 +281,21 @@ impl<'a> Parser<'a> {
           if !self.match_next(Token::ParR) {
             match self.parse_exp() {
               Some(exp) => args.push(exp),
-              None => return None,
+              None => errored = true,
             }
             // ([<exp> {, <exp>}])
             while self.match_next(Token::Comma) {
               self.consume_next(Token::Comma);
               match self.parse_exp() {
                 Some(exp) => args.push(exp),
-                None => return None,
+                None => errored = true,
               }
             }
           }
           self.consume_next(Token::ParR);
+          if errored {
+            return None;
+          }
           if id.is_some() {
             let id = id.unwrap();
             Some(Box::new(StatementExpr::Call { id, args }))
@@ -285,41 +304,49 @@ impl<'a> Parser<'a> {
           }
         }
         Token::Read => {
+          let mut errored = false;
           self.consume_next(Token::Read);
           self.consume_next(Token::ParL);
           let mut id_list = vec![];
           match self.parse_id() {
             Some(id) => id_list.push(id),
-            None => return None,
+            None => errored = true,
           }
           // (<id> {, <id>})
           while self.match_next(Token::Comma) {
             self.consume_next(Token::Comma);
             match self.parse_id() {
               Some(id) => id_list.push(id),
-              None => return None,
+              None => errored = true,
             }
           }
           self.consume_next(Token::ParR);
+          if errored {
+            return None;
+          }
           Some(Box::new(StatementExpr::Read { id_list }))
         }
         Token::Write => {
+          let mut errored = false;
           self.consume_next(Token::Write);
           self.consume_next(Token::ParL);
           let mut exps = vec![];
           match self.parse_exp() {
             Some(exp) => exps.push(exp),
-            None => return None,
+            None => errored = true,
           }
           // (<exp> {, <exp>})
           while self.match_next(Token::Comma) {
             self.consume_next(Token::Comma);
             match self.parse_exp() {
               Some(exp) => exps.push(exp),
-              None => return None,
+              None => errored = true,
             }
           }
           self.consume_next(Token::ParR);
+          if errored {
+            return None;
+          }
           Some(Box::new(StatementExpr::Write { exps }))
         }
         Token::Begin => {
@@ -395,6 +422,7 @@ impl<'a> Parser<'a> {
     }
     let term = self.parse_term();
     let mut aop_terms = vec![];
+    let mut errored = false;
     // {<aop> <term>}
     while self.match_next(Token::Add) || self.match_next(Token::Sub) {
       let aop = self.parse_aop();
@@ -403,8 +431,11 @@ impl<'a> Parser<'a> {
         let (aop, term) = (aop.unwrap(), term.unwrap());
         aop_terms.push((aop, term));
       } else {
-        return None;
+        errored = true;
       }
+    }
+    if errored {
+      return None;
     }
     if term.is_some() {
       let term = term.unwrap();
@@ -423,6 +454,7 @@ impl<'a> Parser<'a> {
   fn parse_term(&mut self) -> Option<Box<TermExpr>> {
     let factor = self.parse_factor();
     let mut mop_factors = vec![];
+    let mut errored = false;
     while self.match_next(Token::Mul) || self.match_next(Token::Div) {
       let mop = self.parse_mop();
       let factor = self.parse_factor();
@@ -430,8 +462,11 @@ impl<'a> Parser<'a> {
         let (mop, factor) = (mop.unwrap(), factor.unwrap());
         mop_factors.push((mop, factor));
       } else {
-        return None;
+        errored = true;
       }
+    }
+    if errored {
+      return None;
     }
     if factor.is_some() {
       let factor = factor.unwrap();
@@ -487,6 +522,7 @@ impl<'a> Parser<'a> {
         Token::Ge => Some(Box::new(LopExpr::Ge)),
         Token::Ne => Some(Box::new(LopExpr::Ne)),
         _ => {
+          // BUG: wrong_if.pas
           let unexpected_token = token.to_owned();
           let err = CompileErrorBuilder::syntax_error_template()
             .with_lexer_ref(&self.lexer)

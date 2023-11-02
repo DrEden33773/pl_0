@@ -151,7 +151,7 @@ pub(crate) static TOKEN_FOLLOW_TABLE: Lazy<HashMap<Token, HashSet<Token>>> = Laz
       .into_iter()
       .fold(src, |acc, x| acc.union(&x).cloned().collect())
   };
-  let semicolon_first: Set = {
+  let semicolon_follow: Set = {
     let candidates = vec![
       FIELD_FIRST_TABLE.get(&Field::Block).unwrap().clone(),
       FIELD_FIRST_TABLE.get(&Field::Statement).unwrap().clone(),
@@ -221,7 +221,7 @@ pub(crate) static TOKEN_FOLLOW_TABLE: Lazy<HashMap<Token, HashSet<Token>>> = Laz
     (Token::EqSign, eqsign_follow),
     (Token::ParL, par_l_follow),
     (Token::ParR, par_r_follow),
-    (Token::Semicolon, semicolon_first),
+    (Token::Semicolon, semicolon_follow),
     (Token::Comma, comma_follow),
     (Token::Identifier(Default::default()), id_follow),
     (Token::Integer(Default::default()), integer_follow),

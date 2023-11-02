@@ -7,4 +7,4 @@ begin
     write(1)
   else
     write(0)
-end;
+end

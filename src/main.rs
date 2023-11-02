@@ -129,4 +129,24 @@ mod demo {
     .parse()
     .show_ast();
   }
+
+  #[test]
+  #[should_panic]
+  fn multi_err_demo() {
+    Parser::new(&file_to_string(
+      PROJECT_ROOT.to_string() + "/examples/parser/multi_err.pas",
+    ))
+    .parse()
+    .show_ast();
+  }
+
+  #[test]
+  #[should_panic]
+  fn wrong_if_demo() {
+    Parser::new(&file_to_string(
+      PROJECT_ROOT.to_string() + "/examples/parser/wrong_if.pas",
+    ))
+    .parse()
+    .show_ast();
+  }
 }
