@@ -23,9 +23,9 @@ impl<'a> Parser<'a> {
     match self.consume_next_identifier() {
       Ok(id) => Some(Box::new(IdExpr(id))),
       Err(_) => {
-        let err = CompileErrorBuilder::semantic_error_template()
+        let err = CompileErrorBuilder::syntax_error_template()
           .with_lexer_ref(&self.lexer)
-          .with_info("Expected <id> syntax_unit, but not found!".to_string())
+          .with_info("Expected <id> field, but not found!".to_string())
           .build();
         eprintln!("{}", err);
         None
@@ -39,9 +39,9 @@ impl<'a> Parser<'a> {
     match self.consume_next_integer() {
       Ok(integer) => Some(Box::new(IntegerExpr(integer))),
       Err(_) => {
-        let err = CompileErrorBuilder::semantic_error_template()
+        let err = CompileErrorBuilder::syntax_error_template()
           .with_lexer_ref(&self.lexer)
-          .with_info("Expected <integer> syntax_unit, but not found!".to_string())
+          .with_info("Expected <integer> field, but not found!".to_string())
           .build();
         eprintln!("{}", err);
         None
@@ -338,7 +338,7 @@ impl<'a> Parser<'a> {
           let err = CompileErrorBuilder::syntax_error_template()
             .with_lexer_ref(&self.lexer)
             .with_info(format!(
-              "Expected <statement> syntax_unit, but got an unmatchable token `{}`",
+              "Expected <statement> field, but got an unmatchable token `{}`",
               unexpected_token
             ))
             .build();
@@ -349,7 +349,7 @@ impl<'a> Parser<'a> {
       None => {
         let err = CompileErrorBuilder::syntax_error_template()
           .with_lexer_ref(&self.lexer)
-          .with_info("Expected <statement> syntax_unit, but got `None`".to_string())
+          .with_info("Expected <statement> field, but got `None`".to_string())
           .build();
         eprintln!("{}", err);
         None
@@ -459,7 +459,7 @@ impl<'a> Parser<'a> {
       let err = CompileErrorBuilder::syntax_error_template()
         .with_lexer_ref(&self.lexer)
         .with_info(format!(
-          "Expected <id> / <integer> / (<exp>) syntax_unit, but got an unmatchable token `{}`",
+          "Expected <id> / <integer> / (<exp>) field, but got an unmatchable token `{}`",
           match unexpected_token {
             Some(t) => t.to_string(),
             None => "None".to_string(),
@@ -487,7 +487,7 @@ impl<'a> Parser<'a> {
           let err = CompileErrorBuilder::syntax_error_template()
             .with_lexer_ref(&self.lexer)
             .with_info(format!(
-              "Expected <lop> syntax_unit, but got an unmatchable token `{}`",
+              "Expected <lop> field, but got an unmatchable token `{}`",
               unexpected_token
             ))
             .build();
@@ -498,7 +498,7 @@ impl<'a> Parser<'a> {
       None => {
         let err = CompileErrorBuilder::syntax_error_template()
           .with_lexer_ref(&self.lexer)
-          .with_info("Expected <lop> syntax_unit, but got `None`".to_string())
+          .with_info("Expected <lop> field, but got `None`".to_string())
           .build();
         eprintln!("{}", err);
         None
@@ -520,7 +520,7 @@ impl<'a> Parser<'a> {
       let err = CompileErrorBuilder::syntax_error_template()
         .with_lexer_ref(&self.lexer)
         .with_info(format!(
-          "Expected <aop> syntax_unit, but got an unmatchable token `{}`",
+          "Expected <aop> field, but got an unmatchable token `{}`",
           match unexpected_token {
             Some(t) => t.to_string(),
             None => "None".to_string(),
@@ -546,7 +546,7 @@ impl<'a> Parser<'a> {
       let err = CompileErrorBuilder::syntax_error_template()
         .with_lexer_ref(&self.lexer)
         .with_info(format!(
-          "Expected <mop> syntax_unit, but got an unmatchable token `{}`",
+          "Expected <mop> field, but got an unmatchable token `{}`",
           match unexpected_token {
             Some(t) => t.to_string(),
             None => "None".to_string(),

@@ -1,5 +1,3 @@
-use crate::error::compile_error::CompileErrorType;
-
 use super::*;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
@@ -42,9 +40,8 @@ impl<'a> Lexer<'a> {
         identifier.push(c);
       } else if c == '_' {
         return Some(Token::LexicalError(
-          CompileErrorBuilder::new()
+          CompileErrorBuilder::lexical_error_template()
             .with_lexer_ref(self)
-            .with_error_type(CompileErrorType::LexicalError)
             .with_info("'_' is not supported for identifier declaration".to_string())
             .build(),
         ));
@@ -63,9 +60,8 @@ impl<'a> Lexer<'a> {
   pub(super) fn lexing_integer(&mut self, first: char) -> Option<Token> {
     if !first.is_ascii_digit() {
       return Some(Token::LexicalError(
-        CompileErrorBuilder::new()
+        CompileErrorBuilder::lexical_error_template()
           .with_lexer_ref(self)
-          .with_error_type(CompileErrorType::LexicalError)
           .with_info(format!("'{first}' is not a digit"))
           .build(),
       ));

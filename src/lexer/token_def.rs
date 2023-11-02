@@ -1,8 +1,8 @@
-use std::fmt::Display;
+use std::{fmt::Display, hash::Hash};
 
 use crate::error::compile_error::CompileError;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, PartialOrd, Ord)]
 pub enum Token {
   /* keywords */
   If,
@@ -41,9 +41,34 @@ pub enum Token {
   /* constant values */
   Integer(i64),
   /* EOS */
-  Eos,
+  // Eos,
   /* Error */
   LexicalError(CompileError),
+}
+
+impl Hash for Token {
+  fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    core::mem::discriminant(self).hash(state);
+  }
+}
+
+impl Eq for Token {}
+
+impl PartialEq for Token {
+  fn eq(&self, other: &Self) -> bool {
+    /* match (self, other) {
+        (Self::Identifier(l0), Self::Identifier(r0)) => l0 == r0,
+        (Self::Integer(l0), Self::Integer(r0)) => l0 == r0,
+        (Self::LexicalError(l0), Self::LexicalError(r0)) => l0 == r0,
+        _ => core::mem::discriminant(self) == core::mem::discriminant(other),
+    } */
+    match (self, other) {
+      (Self::Identifier(_), Self::Identifier(_)) => true,
+      (Self::Integer(_), Self::Integer(_)) => true,
+      (Self::LexicalError(_), Self::LexicalError(_)) => true,
+      _ => core::mem::discriminant(self) == core::mem::discriminant(other),
+    }
+  }
 }
 
 impl Display for Token {

@@ -1,8 +1,9 @@
 pub mod methods;
+pub mod synchronizer;
 
 use crate::{
   ast::ProgramExpr,
-  error::{compile_error::CompileErrorType, error_builder::CompileErrorBuilder},
+  error::error_builder::CompileErrorBuilder,
   lexer::{token_def::Token, Lexer, LexerIterator},
   SEP,
 };
@@ -25,18 +26,13 @@ impl<'a> Parser<'a> {
       self.has_error = true;
     } else if *t != token {
       let unexpected_t = t.to_owned();
-      let err = CompileErrorBuilder::new()
+      let err = CompileErrorBuilder::syntax_error_template()
         .with_lexer_ref(&self.lexer)
-        .with_error_type(CompileErrorType::SyntaxError)
         .with_info(format!("Expected `{}`, but got `{}`", token, unexpected_t))
         .build();
       eprintln!("{}", err);
       self.has_error = true;
-      self.panic_mode = true;
     } else {
-      if self.panic_mode {
-        self.panic_mode = false;
-      }
       self.lexer.next();
     }
   }
@@ -53,37 +49,39 @@ impl<'a> Parser<'a> {
     }
   }
 
-  fn consume_next_identifier(&mut self) -> Result<String, ()> {
+  fn consume_next_identifier(&mut self) -> Result<String, bool> {
     let t = self.lexer.peek().unwrap();
 
     if let Token::LexicalError(err) = t {
       eprintln!("{}", err);
       self.lexer.next();
       self.has_error = true;
-      Err(())
+      Err(true)
     } else if let Token::Identifier(id) = t {
       let id = id.to_owned();
       self.lexer.next();
       Ok(id)
     } else {
-      Err(())
+      self.has_error = true;
+      Err(false)
     }
   }
 
-  fn consume_next_integer(&mut self) -> Result<i64, ()> {
+  fn consume_next_integer(&mut self) -> Result<i64, bool> {
     let t = self.lexer.peek().unwrap();
 
     if let Token::LexicalError(err) = t {
       eprintln!("{}", err);
       self.lexer.next();
       self.has_error = true;
-      Err(())
+      Err(true)
     } else if let Token::Integer(num) = t {
       let num = num.to_owned();
       self.lexer.next();
       Ok(num)
     } else {
-      Err(())
+      self.has_error = true;
+      Err(false)
     }
   }
 }
@@ -101,7 +99,7 @@ impl<'a> Parser<'a> {
   pub fn parse(&mut self) -> &mut Self {
     let program_expr = self.parse_program();
     if self.has_error {
-      panic!("|> Errors above occurred (during `parsing`), compiling stopped ... <|\n")
+      panic!("|> Errors above occurred (during `parsing`), compiling stopped ... <|\n");
     }
     self.ast_entry = program_expr;
     self

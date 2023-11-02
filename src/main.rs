@@ -21,6 +21,7 @@ fn compile_from_file(src: &str) {
 }
 
 #[allow(dead_code)]
+#[deprecated]
 fn compile_from_file_with_pest(src: &str) {
   let unparsed_file = std::fs::read_to_string(src).expect("cannot read source file");
   let ast = PestParser::parse_content(&unparsed_file);
@@ -120,7 +121,7 @@ mod demo {
   }
 
   #[test]
-  // #[should_panic]
+  #[should_panic]
   fn losing_eqsign_demo() {
     Parser::new(&file_to_string(
       PROJECT_ROOT.to_string() + "/examples/parser/losing_eqsign.pas",
