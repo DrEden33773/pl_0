@@ -17,8 +17,8 @@ pub trait LexerIterator {
 pub struct Lexer<'a> {
   source: Peekable<Chars<'a>>,
   ahead: Option<Token>,
-  line_num: usize,
-  col_num: usize,
+  pub(super) line_num: usize,
+  pub(super) col_num: usize,
 }
 
 impl<'a> Iterator for Lexer<'a> {

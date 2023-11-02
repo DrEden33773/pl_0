@@ -2,7 +2,10 @@ pub mod methods;
 
 use crate::{
   ast::ProgramExpr,
-  error::compile_error::CompileError,
+  error::{
+    compile_error::{CompileError, CompileErrorType},
+    error_builder::CompileErrorBuilder,
+  },
   lexer::{token_def::Token, Lexer, LexerIterator},
   SEP,
 };
@@ -21,14 +24,23 @@ impl<'a> Parser<'a> {
 
     if let Token::LexicalError(err) = t.to_owned() {
       eprintln!("{}", err);
+      self.lexer.next();
       self.has_error = true;
     } else if *t != token {
       let unexpected_t = t.to_owned();
-      self.lexer.panic_compile_error(
-        CompileError::syntax_error_template(),
-        format!("Expected `{}`, but got `{}`", token, unexpected_t),
-      );
+      let err = CompileErrorBuilder::new()
+        .with_line(self.lexer.line_num)
+        .with_col(self.lexer.col_num)
+        .with_error_type(CompileErrorType::SyntaxError)
+        .with_info(format!("Expected `{}`, but got `{}`", token, unexpected_t))
+        .build();
+      eprintln!("{}", err);
+      self.has_error = true;
+      self.panic_mode = true;
     } else {
+      if self.panic_mode {
+        self.panic_mode = false;
+      }
       self.lexer.next();
     }
   }
@@ -50,12 +62,13 @@ impl<'a> Parser<'a> {
 
     if let Token::LexicalError(err) = t {
       eprintln!("{}", err);
+      self.lexer.next();
       self.has_error = true;
       Err(())
     } else if let Token::Identifier(id) = t {
       let id = id.to_owned();
       self.lexer.next();
-      Ok(id.to_owned())
+      Ok(id)
     } else {
       Err(())
     }
@@ -66,6 +79,7 @@ impl<'a> Parser<'a> {
 
     if let Token::LexicalError(err) = t {
       eprintln!("{}", err);
+      self.lexer.next();
       self.has_error = true;
       Err(())
     } else if let Token::Integer(num) = t {
@@ -91,7 +105,7 @@ impl<'a> Parser<'a> {
   pub fn parse(&mut self) -> &mut Self {
     let program_expr = self.parse_program();
     if self.has_error {
-      panic!("Errors above occurred (during `parsing`), compiling stopped ...")
+      panic!("|> Errors above occurred (during `parsing`), compiling stopped ... <|\n")
     }
     self.ast_entry = Some(program_expr.into());
     self

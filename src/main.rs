@@ -10,7 +10,6 @@ static PROJECT_ROOT: Lazy<String> =
   Lazy::new(|| get_project_root().unwrap().to_str().unwrap().to_string());
 
 fn compile_from_file(src: &str) {
-  // std::env::set_current_dir(PROJECT_ROOT.as_str()).unwrap();
   let mut string_buf = String::new();
   File::open(src)
     .unwrap()
@@ -115,6 +114,16 @@ mod demo {
   fn losing_prog_id_demo() {
     Parser::new(&file_to_string(
       PROJECT_ROOT.to_string() + "/examples/parser/losing_prog_id.pas",
+    ))
+    .parse()
+    .show_ast();
+  }
+
+  #[test]
+  // #[should_panic]
+  fn losing_eqsign_demo() {
+    Parser::new(&file_to_string(
+      PROJECT_ROOT.to_string() + "/examples/parser/losing_eqsign.pas",
     ))
     .parse()
     .show_ast();
