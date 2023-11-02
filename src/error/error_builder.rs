@@ -1,3 +1,5 @@
+use crate::lexer::Lexer;
+
 use super::compile_error::{CompileError, CompileErrorType};
 
 #[derive(Debug, Clone, Default)]
@@ -36,13 +38,21 @@ impl CompileErrorBuilder {
     Self::default()
   }
 
+  #[deprecated]
   pub fn with_line(mut self, line: usize) -> Self {
     self.line = Some(line);
     self
   }
 
+  #[deprecated]
   pub fn with_col(mut self, col: usize) -> Self {
     self.col = Some(col);
+    self
+  }
+
+  pub fn with_lexer_ref(mut self, lexer: &Lexer) -> Self {
+    self.line = Some(lexer.line_num);
+    self.col = Some(lexer.col_num);
     self
   }
 

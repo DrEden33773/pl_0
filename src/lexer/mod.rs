@@ -45,6 +45,8 @@ impl<'a> LexerIterator for Lexer<'a> {
 }
 
 impl<'a> Lexer<'a> {
+  #[deprecated]
+  #[allow(dead_code)]
   pub(super) fn panic_compile_error(
     &mut self,
     mut error_template: CompileError,
@@ -64,8 +66,7 @@ impl<'a> Lexer<'a> {
     } else {
       Err(
         CompileErrorBuilder::lexical_error_template()
-          .with_line(self.line_num)
-          .with_col(self.col_num)
+          .with_lexer_ref(self)
           .with_info(format!("'{}' is not an ASCII character", c))
           .build()
           .into(),
@@ -147,8 +148,7 @@ impl<'a> Lexer<'a> {
             }
             _ => Some(Token::LexicalError(
               CompileErrorBuilder::lexical_error_template()
-                .with_line(self.line_num)
-                .with_col(self.col_num)
+                .with_lexer_ref(self)
                 .with_info("':' is an undefined sign, did you mean ':='?".to_string())
                 .build(),
             )),
@@ -159,15 +159,13 @@ impl<'a> Lexer<'a> {
         'a'..='z' | 'A'..='Z' => self.lexing_identifier(c),
         c if !c.is_ascii() => Some(Token::LexicalError(
           CompileErrorBuilder::lexical_error_template()
-            .with_line(self.line_num)
-            .with_col(self.col_num)
+            .with_lexer_ref(self)
             .with_info(format!("'{}' is not an ASCII character", c))
             .build(),
         )),
         _ => Some(Token::LexicalError(
           CompileErrorBuilder::lexical_error_template()
-            .with_line(self.line_num)
-            .with_col(self.col_num)
+            .with_lexer_ref(self)
             .with_info(format!("'{}' is an unexpected character", c))
             .build(),
         )),

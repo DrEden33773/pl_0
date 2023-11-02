@@ -2,10 +2,7 @@ pub mod methods;
 
 use crate::{
   ast::ProgramExpr,
-  error::{
-    compile_error::{CompileError, CompileErrorType},
-    error_builder::CompileErrorBuilder,
-  },
+  error::{compile_error::CompileErrorType, error_builder::CompileErrorBuilder},
   lexer::{token_def::Token, Lexer, LexerIterator},
   SEP,
 };
@@ -29,8 +26,7 @@ impl<'a> Parser<'a> {
     } else if *t != token {
       let unexpected_t = t.to_owned();
       let err = CompileErrorBuilder::new()
-        .with_line(self.lexer.line_num)
-        .with_col(self.lexer.col_num)
+        .with_lexer_ref(&self.lexer)
         .with_error_type(CompileErrorType::SyntaxError)
         .with_info(format!("Expected `{}`, but got `{}`", token, unexpected_t))
         .build();
@@ -107,7 +103,7 @@ impl<'a> Parser<'a> {
     if self.has_error {
       panic!("|> Errors above occurred (during `parsing`), compiling stopped ... <|\n")
     }
-    self.ast_entry = Some(program_expr.into());
+    self.ast_entry = program_expr;
     self
   }
 
