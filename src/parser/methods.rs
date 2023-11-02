@@ -91,12 +91,16 @@ impl<'a> Parser<'a> {
       None => return None,
     }
     // {, <const>}
+    let mut is_errored = false;
     while self.match_next(Token::Comma) {
       self.consume_next(Token::Comma);
       match self.parse_const() {
         Some(c) => constants.push(c),
-        None => return None,
+        None => is_errored = true,
       }
+    }
+    if is_errored {
+      return None;
     }
     self.consume_next(Token::Semicolon);
     Some(Box::new(ConstDeclExpr { constants }))

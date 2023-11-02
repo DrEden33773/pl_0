@@ -2,7 +2,7 @@ use super::*;
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Clone, Copy, Hash)]
-pub(super) enum Field {
+pub(crate) enum Field {
   Prog,
   Block,
   ConstDecl,
@@ -20,7 +20,7 @@ pub(super) enum Field {
   Mop,
 }
 
-pub(super) static FIELD_FIRST_TABLE: Lazy<HashMap<Field, HashSet<Token>>> = Lazy::new(|| {
+pub(crate) static FIELD_FIRST_TABLE: Lazy<HashMap<Field, HashSet<Token>>> = Lazy::new(|| {
   type Set = HashSet<Token>;
   let id_token: Set = vec![Token::Identifier(Default::default())]
     .into_iter()
@@ -109,7 +109,7 @@ pub(super) static FIELD_FIRST_TABLE: Lazy<HashMap<Field, HashSet<Token>>> = Lazy
   .collect()
 });
 
-pub(super) static TOKEN_FOLLOW_TABLE: Lazy<HashMap<Token, HashSet<Token>>> = Lazy::new(|| {
+pub(crate) static TOKEN_FOLLOW_TABLE: Lazy<HashMap<Token, HashSet<Token>>> = Lazy::new(|| {
   type Set = HashSet<Token>;
   let id_token: Set = vec![Token::Identifier(Default::default())]
     .into_iter()
@@ -161,6 +161,16 @@ pub(super) static TOKEN_FOLLOW_TABLE: Lazy<HashMap<Token, HashSet<Token>>> = Laz
       .into_iter()
       .fold(Set::default(), |acc, x| acc.union(&x).cloned().collect())
   };
+  let id_follow = vec![
+    Token::Semicolon,
+    Token::EqSign,
+    Token::Comma,
+    Token::ParL,
+    Token::ParR,
+  ]
+  .into_iter()
+  .collect();
+  let integer_follow = Set::default();
   vec![
     (
       Token::If,
@@ -213,6 +223,8 @@ pub(super) static TOKEN_FOLLOW_TABLE: Lazy<HashMap<Token, HashSet<Token>>> = Laz
     (Token::ParR, par_r_follow),
     (Token::Semicolon, semicolon_first),
     (Token::Comma, comma_follow),
+    (Token::Identifier(Default::default()), id_follow),
+    (Token::Integer(Default::default()), integer_follow),
   ]
   .into_iter()
   .collect()

@@ -5,6 +5,7 @@ use crate::{
   ast::ProgramExpr,
   error::error_builder::CompileErrorBuilder,
   lexer::{token_def::Token, Lexer, LexerIterator},
+  parser::synchronizer::tables::TOKEN_FOLLOW_TABLE,
   SEP,
 };
 
@@ -18,69 +19,119 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
   fn consume_next(&mut self, token: Token) {
-    let t = self.lexer.peek().unwrap();
+    if self.lexer.peek().is_none() {
+      self.has_error = true;
+      return;
+    }
 
-    if let Token::LexicalError(err) = t.to_owned() {
+    let t = self.lexer.peek().cloned().unwrap();
+
+    if let Token::LexicalError(err) = t {
       eprintln!("{}", err);
       self.lexer.next();
       self.has_error = true;
-    } else if *t != token {
+      self.panic_mode = true;
+    } else if t != token {
       let unexpected_t = t.to_owned();
       let err = CompileErrorBuilder::syntax_error_template()
         .with_lexer_ref(&self.lexer)
         .with_info(format!("Expected `{}`, but got `{}`", token, unexpected_t))
         .build();
       eprintln!("{}", err);
+      if !TOKEN_FOLLOW_TABLE.get(&token).unwrap().contains(&t) {
+        self.lexer.next();
+        self.panic_mode = true;
+      } else {
+        self.panic_mode = false;
+      }
       self.has_error = true;
     } else {
+      self.panic_mode = false;
       self.lexer.next();
     }
   }
 
   fn match_next(&mut self, token: Token) -> bool {
-    let t = self.lexer.peek().unwrap();
+    if self.lexer.peek().is_none() {
+      self.has_error = true;
+      return false;
+    }
 
-    if let Token::LexicalError(err) = t.to_owned() {
+    let t = self.lexer.peek().cloned().unwrap();
+
+    if let Token::LexicalError(err) = t {
       eprintln!("{}", err);
       self.has_error = true;
       false
     } else {
-      *t == token
+      t == token
     }
   }
 
   fn consume_next_identifier(&mut self) -> Result<String, bool> {
-    let t = self.lexer.peek().unwrap();
+    if self.lexer.peek().is_none() {
+      self.has_error = true;
+      return Err(false);
+    }
+
+    let t = self.lexer.peek().cloned().unwrap();
 
     if let Token::LexicalError(err) = t {
       eprintln!("{}", err);
       self.lexer.next();
       self.has_error = true;
+      self.panic_mode = true;
       Err(true)
     } else if let Token::Identifier(id) = t {
-      let id = id.to_owned();
       self.lexer.next();
+      self.panic_mode = false;
       Ok(id)
     } else {
       self.has_error = true;
+      if !TOKEN_FOLLOW_TABLE
+        .get(&Token::Identifier(Default::default()))
+        .unwrap()
+        .contains(&t)
+      {
+        self.lexer.next();
+        self.panic_mode = true;
+      } else {
+        self.panic_mode = false;
+      }
       Err(false)
     }
   }
 
   fn consume_next_integer(&mut self) -> Result<i64, bool> {
-    let t = self.lexer.peek().unwrap();
+    if self.lexer.peek().is_none() {
+      self.has_error = true;
+      return Err(false);
+    }
+
+    let t = self.lexer.peek().cloned().unwrap();
 
     if let Token::LexicalError(err) = t {
       eprintln!("{}", err);
       self.lexer.next();
       self.has_error = true;
+      self.panic_mode = true;
       Err(true)
     } else if let Token::Integer(num) = t {
-      let num = num.to_owned();
       self.lexer.next();
+      self.panic_mode = false;
       Ok(num)
     } else {
       self.has_error = true;
+      if !TOKEN_FOLLOW_TABLE
+        .get(&Token::Integer(Default::default()))
+        .unwrap()
+        .contains(&t)
+      {
+        self.lexer.next();
+        self.panic_mode = true;
+      } else {
+        self.panic_mode = false;
+      }
       Err(false)
     }
   }

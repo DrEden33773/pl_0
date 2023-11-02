@@ -38,13 +38,11 @@ impl CompileErrorBuilder {
     Self::default()
   }
 
-  #[deprecated]
   pub fn with_line(mut self, line: usize) -> Self {
     self.line = Some(line);
     self
   }
 
-  #[deprecated]
   pub fn with_col(mut self, col: usize) -> Self {
     self.col = Some(col);
     self
