@@ -1,5 +1,8 @@
 use super::*;
-use crate::ast::*;
+use crate::{
+  ast::*,
+  parser::synchronizer::tables::{Field, FIELD_FOLLOW_TABLE},
+};
 
 impl<'a> Parser<'a> {
   /// ```bnf
@@ -483,29 +486,46 @@ impl<'a> Parser<'a> {
   /// <factor> -> <id> | <integer> | (<exp>)
   fn parse_factor(&mut self) -> Option<Box<FactorExpr>> {
     if self.match_next(Token::ParL) {
+      self.panic_mode = false;
       self.consume_next(Token::ParL);
       let exp = self.parse_exp();
       self.consume_next(Token::ParR);
       exp.map(|exp| Box::new(FactorExpr::Exp(exp)))
     } else if matches!(self.lexer.peek(), Some(Token::Identifier(_))) {
+      self.panic_mode = false;
       let id = self.parse_id();
       id.map(|id| Box::new(FactorExpr::Id(id)))
     } else if matches!(self.lexer.peek(), Some(Token::Integer(_))) {
+      self.panic_mode = false;
       let integer = self.parse_integer();
       integer.map(|integer| Box::new(FactorExpr::Integer(integer)))
     } else {
-      let unexpected_token = self.lexer.next();
+      // BUG: error not synchronized
+      // TODO: fix
+      self.has_error = true;
+      let unexpected_t = self.lexer.peek().cloned();
       let err = CompileErrorBuilder::syntax_error_template()
         .with_lexer_ref(&self.lexer)
         .with_info(format!(
-          "Expected <id> / <integer> / (<exp>) field, but got an unmatchable token `{}`",
-          match unexpected_token {
+          "Expected `<id>` / `<integer>` / `(<exp>)` field, but got an unmatchable token `{}`",
+          match &unexpected_t {
             Some(t) => t.to_string(),
             None => "None".to_string(),
           }
         ))
         .build();
       eprintln!("{}", err);
+      if let Some(t) = unexpected_t {
+        if !FIELD_FOLLOW_TABLE.get(&Field::Factor).unwrap().contains(&t) {
+          self.lexer.next();
+          self.panic_mode = true;
+        } else {
+          self.panic_mode = false;
+        }
+      } else {
+        self.lexer.next();
+        self.panic_mode = true;
+      }
       None
     }
   }
@@ -513,33 +533,75 @@ impl<'a> Parser<'a> {
   /// ```bnf
   /// <lop> -> = | <> | < | <= | > | >=
   fn parse_lop(&mut self) -> Option<Box<LopExpr>> {
-    match self.lexer.next() {
+    match self.lexer.peek() {
       Some(token) => match token {
-        Token::Eq => Some(Box::new(LopExpr::Eq)),
-        Token::Lt => Some(Box::new(LopExpr::Lt)),
-        Token::Gt => Some(Box::new(LopExpr::Gt)),
-        Token::Le => Some(Box::new(LopExpr::Le)),
-        Token::Ge => Some(Box::new(LopExpr::Ge)),
-        Token::Ne => Some(Box::new(LopExpr::Ne)),
+        Token::Eq => {
+          self.panic_mode = false;
+          self.lexer.next();
+          Some(Box::new(LopExpr::Eq))
+        }
+        Token::Lt => {
+          self.panic_mode = false;
+          self.lexer.next();
+          Some(Box::new(LopExpr::Lt))
+        }
+        Token::Gt => {
+          self.panic_mode = false;
+          self.lexer.next();
+          Some(Box::new(LopExpr::Gt))
+        }
+        Token::Le => {
+          self.panic_mode = false;
+          self.lexer.next();
+          Some(Box::new(LopExpr::Le))
+        }
+        Token::Ge => {
+          self.panic_mode = false;
+          self.lexer.next();
+          Some(Box::new(LopExpr::Ge))
+        }
+        Token::Ne => {
+          self.panic_mode = false;
+          self.lexer.next();
+          Some(Box::new(LopExpr::Ne))
+        }
         _ => {
-          let unexpected_token = token.to_owned();
+          // BUG: error not synchronized
+          // TODO: fix
+          self.has_error = true;
+          let unexpected_t = token.to_owned();
           let err = CompileErrorBuilder::syntax_error_template()
             .with_lexer_ref(&self.lexer)
             .with_info(format!(
               "Expected <lop> field, but got an unmatchable token `{}`",
-              unexpected_token
+              &unexpected_t
             ))
             .build();
           eprintln!("{}", err);
+          if !FIELD_FOLLOW_TABLE
+            .get(&Field::Lop)
+            .unwrap()
+            .contains(&unexpected_t)
+          {
+            self.lexer.next();
+            self.panic_mode = true;
+          } else {
+            self.panic_mode = false;
+          }
           None
         }
       },
       None => {
+        // BUG: error not synchronized
+        // TODO: fix
+        self.has_error = true;
         let err = CompileErrorBuilder::syntax_error_template()
           .with_lexer_ref(&self.lexer)
           .with_info("Expected <lop> field, but got `None`".to_string())
           .build();
         eprintln!("{}", err);
+        self.lexer.next();
+        self.panic_mode = true;
         None
       }
     }
@@ -549,24 +611,40 @@ impl<'a> Parser<'a> {
   /// <aop> -> + | -
   fn parse_aop(&mut self) -> Option<Box<AopExpr>> {
     if self.match_next(Token::Add) {
+      self.panic_mode = false;
       self.consume_next(Token::Add);
       Some(Box::new(AopExpr::Add))
     } else if self.match_next(Token::Sub) {
+      self.panic_mode = false;
       self.consume_next(Token::Sub);
       Some(Box::new(AopExpr::Sub))
     } else {
-      let unexpected_token = self.lexer.next();
+      // BUG: error not synchronized
+      // TODO: fix
+      self.has_error = true;
+      let unexpected_t = self.lexer.peek().cloned();
       let err = CompileErrorBuilder::syntax_error_template()
         .with_lexer_ref(&self.lexer)
         .with_info(format!(
           "Expected <aop> field, but got an unmatchable token `{}`",
-          match unexpected_token {
+          match &unexpected_t {
             Some(t) => t.to_string(),
             None => "None".to_string(),
           }
         ))
         .build();
       eprintln!("{}", err);
+      if let Some(t) = unexpected_t {
+        if !FIELD_FOLLOW_TABLE.get(&Field::Aop).unwrap().contains(&t) {
+          self.lexer.next();
+          self.panic_mode = true;
+        } else {
+          self.panic_mode = false;
+        }
+      } else {
+        self.lexer.next();
+        self.panic_mode = true;
+      }
       None
     }
   }
@@ -581,18 +659,32 @@ impl<'a> Parser<'a> {
       self.consume_next(Token::Div);
       Some(Box::new(MopExpr::Div))
     } else {
-      let unexpected_token = self.lexer.next();
+      // BUG: error not synchronized
+      // TODO: fix
+      self.has_error = true;
+      let unexpected_t = self.lexer.peek().cloned();
       let err = CompileErrorBuilder::syntax_error_template()
         .with_lexer_ref(&self.lexer)
         .with_info(format!(
           "Expected <mop> field, but got an unmatchable token `{}`",
-          match unexpected_token {
+          match &unexpected_t {
             Some(t) => t.to_string(),
             None => "None".to_string(),
           }
         ))
         .build();
       eprintln!("{}", err);
+      if let Some(t) = unexpected_t {
+        if !FIELD_FOLLOW_TABLE.get(&Field::Mop).unwrap().contains(&t) {
+          self.lexer.next();
+          self.panic_mode = true;
+        } else {
+          self.panic_mode = false;
+        }
+      } else {
+        self.lexer.next();
+        self.panic_mode = true;
+      }
       None
     }
   }

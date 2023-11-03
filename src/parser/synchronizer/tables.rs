@@ -18,7 +18,114 @@ pub(crate) enum Field {
   Lop,
   Aop,
   Mop,
+  Id,
+  Integer,
 }
+
+pub(crate) static FIELD_FOLLOW_TABLE: Lazy<HashMap<Field, HashSet<Token>>> = Lazy::new(|| {
+  type Set = HashSet<Token>;
+  let prog_follow = Set::default();
+  let proc_follow = FIELD_FIRST_TABLE.get(&Field::Body).unwrap().clone();
+  let block_follow = {
+    let src = vec![Token::Semicolon].into_iter().collect::<Set>();
+    let candidates = vec![prog_follow.clone(), proc_follow.clone()];
+    candidates
+      .into_iter()
+      .fold(src, |acc, x| acc.union(&x).cloned().collect())
+  };
+  let const_decl_follow = {
+    let unions = vec![
+      FIELD_FIRST_TABLE.get(&Field::VarDecl).unwrap().clone(),
+      FIELD_FIRST_TABLE.get(&Field::Proc).unwrap().clone(),
+      FIELD_FIRST_TABLE.get(&Field::Body).unwrap().clone(),
+    ];
+    unions
+      .into_iter()
+      .fold(Set::default(), |acc, x| acc.union(&x).cloned().collect())
+  };
+  let const_follow = vec![Token::Semicolon, Token::Comma].into_iter().collect();
+  let var_decl_follow = {
+    let unions = vec![
+      FIELD_FIRST_TABLE.get(&Field::Proc).unwrap().clone(),
+      FIELD_FIRST_TABLE.get(&Field::Body).unwrap().clone(),
+    ];
+    unions
+      .into_iter()
+      .fold(Set::default(), |acc, x| acc.union(&x).cloned().collect())
+  };
+  let body_follow = {
+    let unions = vec![prog_follow.clone(), proc_follow.clone()];
+    unions
+      .into_iter()
+      .fold(Set::default(), |acc, x| acc.union(&x).cloned().collect())
+  };
+  let statement_follow = vec![Token::Semicolon, Token::End, Token::Else]
+    .into_iter()
+    .collect::<Set>();
+  let l_exp_follow = vec![Token::Then, Token::Do].into_iter().collect::<Set>();
+  let exp_follow = {
+    let src = vec![Token::ParR, Token::Comma].into_iter().collect::<Set>();
+    let candidates = vec![
+      statement_follow.clone(),
+      l_exp_follow.clone(),
+      FIELD_FIRST_TABLE.get(&Field::Lop).unwrap().clone(),
+    ];
+    candidates
+      .into_iter()
+      .fold(src, |acc, x| acc.union(&x).cloned().collect())
+  };
+  let term_follow = exp_follow
+    .clone()
+    .union(FIELD_FIRST_TABLE.get(&Field::Aop).unwrap())
+    .cloned()
+    .collect::<Set>();
+  let factor_follow = term_follow
+    .clone()
+    .union(FIELD_FIRST_TABLE.get(&Field::Mop).unwrap())
+    .cloned()
+    .collect::<Set>();
+  let lop_follow = FIELD_FIRST_TABLE.get(&Field::Exp).unwrap().clone();
+  let aop_follow = FIELD_FIRST_TABLE.get(&Field::Term).unwrap().clone();
+  let mop_follow = FIELD_FIRST_TABLE.get(&Field::Factor).unwrap().clone();
+  let id_follow = vec![
+    Token::Semicolon,
+    Token::EqSign,
+    Token::Comma,
+    Token::ParL,
+    Token::ParR,
+  ]
+  .into_iter()
+  .collect::<Set>()
+  .union(&factor_follow)
+  .cloned()
+  .collect();
+  let integer_follow = factor_follow
+    .clone()
+    .union(&const_follow)
+    .cloned()
+    .collect();
+  vec![
+    (Field::Prog, prog_follow),
+    (Field::Block, block_follow),
+    (Field::ConstDecl, const_decl_follow),
+    (Field::Const, const_follow),
+    (Field::VarDecl, var_decl_follow),
+    (Field::Proc, proc_follow),
+    (Field::Body, body_follow),
+    (Field::Statement, statement_follow),
+    (Field::LExp, l_exp_follow),
+    (Field::Exp, exp_follow),
+    (Field::Term, term_follow),
+    (Field::Factor, factor_follow),
+    (Field::Lop, lop_follow),
+    (Field::Aop, aop_follow),
+    (Field::Mop, mop_follow),
+    (Field::Id, id_follow),
+    (Field::Integer, integer_follow),
+  ]
+  .into_iter()
+  .collect()
+});
 
 pub(crate) static FIELD_FIRST_TABLE: Lazy<HashMap<Field, HashSet<Token>>> = Lazy::new(|| {
   type Set = HashSet<Token>;
