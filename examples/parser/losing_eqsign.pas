@@ -1,5 +1,5 @@
 program LosingEqSign;
   var a;
 begin
-  a 1;
+  a 1
 end

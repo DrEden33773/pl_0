@@ -64,6 +64,22 @@ impl<'a> Lexer<'a> {
     if c.is_ascii() {
       Ok(c)
     } else {
+      self.next_char();
+      Err(
+        CompileErrorBuilder::lexical_error_template()
+          .with_lexer_ref(self)
+          .with_info(format!("'{}' is not an ASCII character", c))
+          .build()
+          .into(),
+      )
+    }
+  }
+
+  #[allow(dead_code)]
+  fn ascii_char_handler_without_skipping_lexical_error(&mut self, c: char) -> Result<char, Token> {
+    if c.is_ascii() {
+      Ok(c)
+    } else {
       Err(
         CompileErrorBuilder::lexical_error_template()
           .with_lexer_ref(self)

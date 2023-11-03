@@ -25,7 +25,12 @@ impl<'a> Parser<'a> {
   fn parse_id(&mut self) -> Option<Box<IdExpr>> {
     match self.consume_next_identifier() {
       Ok(id) => Some(Box::new(IdExpr(id))),
-      Err(_) => {
+      Err(is_lexical_error) => {
+        if is_lexical_error {
+          while let Some(Token::LexicalError(_)) = self.lexer.peek() {
+            self.consume_next_identifier().unwrap_err();
+          }
+        }
         let err = CompileErrorBuilder::syntax_error_template()
           .with_lexer_ref(&self.lexer)
           .with_info("Expected <id> field, but not found!".to_string())
@@ -41,7 +46,12 @@ impl<'a> Parser<'a> {
   fn parse_integer(&mut self) -> Option<Box<IntegerExpr>> {
     match self.consume_next_integer() {
       Ok(integer) => Some(Box::new(IntegerExpr(integer))),
-      Err(_) => {
+      Err(is_lexical_error) => {
+        if is_lexical_error {
+          while let Some(Token::LexicalError(_)) = self.lexer.peek() {
+            self.consume_next_integer().unwrap_err();
+          }
+        }
         let err = CompileErrorBuilder::syntax_error_template()
           .with_lexer_ref(&self.lexer)
           .with_info("Expected <integer> field, but not found!".to_string())
@@ -367,6 +377,20 @@ impl<'a> Parser<'a> {
             None
           }
         }
+        Token::LexicalError(_) => {
+          self.has_error = true;
+          while let Some(Token::LexicalError(_)) = self.lexer.peek() {
+            self.consume_next_identifier().unwrap_err();
+          }
+          let err = CompileErrorBuilder::syntax_error_template()
+            .with_lexer_ref(&self.lexer)
+            .with_info("Expected <statement> field, but not found!".to_string())
+            .build();
+          self.consume_next(Token::EqSign);
+          let _exp = self.parse_exp();
+          eprintln!("{}", err);
+          None
+        }
         _ => {
           let unexpected_token = token.to_owned();
           let err = CompileErrorBuilder::syntax_error_template()
@@ -499,9 +523,18 @@ impl<'a> Parser<'a> {
       self.panic_mode = false;
       let integer = self.parse_integer();
       integer.map(|integer| Box::new(FactorExpr::Integer(integer)))
+    } else if matches!(self.lexer.peek(), Some(Token::LexicalError(_))) {
+      self.has_error = true;
+      while let Some(Token::LexicalError(_)) = self.lexer.peek() {
+        self.consume_next_identifier().unwrap_err();
+      }
+      let err = CompileErrorBuilder::syntax_error_template()
+        .with_lexer_ref(&self.lexer)
+        .with_info("Expected `<id>` / `<integer>` / `(<exp>)` field, but not found!".to_string())
+        .build();
+      eprintln!("{}", err);
+      None
     } else {
-      // BUG: error not synchronized
-      // TODO: fix
       self.has_error = true;
       let unexpected_t = self.lexer.peek().cloned();
       let err = CompileErrorBuilder::syntax_error_template()
@@ -566,8 +599,6 @@ impl<'a> Parser<'a> {
           Some(Box::new(LopExpr::Ne))
         }
         _ => {
-          // BUG: error not synchronized
-          // TODO: fix
           self.has_error = true;
           let unexpected_t = token.to_owned();
           let err = CompileErrorBuilder::syntax_error_template()
@@ -592,8 +623,6 @@ impl<'a> Parser<'a> {
         }
       },
       None => {
-        // BUG: error not synchronized
-        // TODO: fix
         self.has_error = true;
         let err = CompileErrorBuilder::syntax_error_template()
           .with_lexer_ref(&self.lexer)
@@ -619,8 +648,6 @@ impl<'a> Parser<'a> {
       self.consume_next(Token::Sub);
       Some(Box::new(AopExpr::Sub))
     } else {
-      // BUG: error not synchronized
-      // TODO: fix
       self.has_error = true;
       let unexpected_t = self.lexer.peek().cloned();
       let err = CompileErrorBuilder::syntax_error_template()
@@ -659,8 +686,6 @@ impl<'a> Parser<'a> {
       self.consume_next(Token::Div);
       Some(Box::new(MopExpr::Div))
     } else {
-      // BUG: error not synchronized
-      // TODO: fix
       self.has_error = true;
       let unexpected_t = self.lexer.peek().cloned();
       let err = CompileErrorBuilder::syntax_error_template()

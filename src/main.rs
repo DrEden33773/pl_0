@@ -82,6 +82,26 @@ mod demo {
 
   #[test]
   #[should_panic]
+  fn japanese_character_demo() {
+    let content =
+      file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/japanese_programming.pas");
+    let mut parser = Parser::new(&content);
+    parser.parse();
+    parser.show_ast();
+  }
+
+  #[test]
+  #[should_panic]
+  fn chinese_in_keyword_demo() {
+    let content =
+      file_to_string(PROJECT_ROOT.to_string() + "/examples/parser/chinese_in_keyword.pas");
+    let mut parser = Parser::new(&content);
+    parser.parse();
+    parser.show_ast();
+  }
+
+  #[test]
+  #[should_panic]
   fn single_colon_demo() {
     Parser::new(&file_to_string(
       PROJECT_ROOT.to_string() + "/examples/lexer/single_colon.pas",

@@ -59,8 +59,8 @@ impl<'a> Parser<'a> {
 
     let t = self.lexer.peek().cloned().unwrap();
 
-    if let Token::LexicalError(err) = t {
-      eprintln!("{}", err);
+    if let Token::LexicalError(_err) = t {
+      // eprintln!("{}", _err); // shouldn't show lexical error while simply matching
       self.has_error = true;
       false
     } else {

@@ -21,3 +21,12 @@ This will be extremely useful while handling `error sync`.
 - [x] mop
 - [x] id
 - [x] integer
+
+## 4. Deal with `Token::LexicalError` while `<id> / <integer>` appeared as the `first generation` of any `sub formula`
+
+Only need to consider:
+
+- [x] id
+- [x] integer
+- [x] statement
+- [x] factor

@@ -50,7 +50,7 @@ However, it's necessary to prove that the given [BNF](#bnf) satisfy the definiti
 
 Proof will be given later.
 
-### TODO: Error Handling
+### Error Handling
 
 I'll adapt the welcomed `panic-mode` error handling strategy for this part, to make sure that the `compiler` could find as many errors as possible in one run, instead of being halted by the first error.
 

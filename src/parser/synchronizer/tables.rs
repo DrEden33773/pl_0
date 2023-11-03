@@ -249,10 +249,12 @@ pub(crate) static TOKEN_FOLLOW_TABLE: Lazy<HashMap<Token, HashSet<Token>>> = Laz
     .union(FIELD_FIRST_TABLE.get(&Field::Exp).unwrap())
     .cloned()
     .collect();
-  let statement_follow: Set = vec![Token::Semicolon, Token::End].into_iter().collect();
+  let statement_follow: Set = vec![Token::Semicolon, Token::End, Token::Else]
+    .into_iter()
+    .collect();
   let factor_follow = FIELD_FIRST_TABLE.get(&Field::Mop).unwrap().clone();
   let par_r_follow = {
-    let src: Set = vec![Token::ParR].into_iter().collect();
+    let src: Set = vec![Token::Semicolon].into_iter().collect();
     let candidates = vec![factor_follow.clone(), statement_follow.clone()];
     candidates
       .into_iter()
