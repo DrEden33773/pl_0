@@ -1,16 +1,14 @@
 # TODO
 
-## 1. Add `Follow` set for each kind of `Token`
+## 1. Add `Follow` set for each kind of `Token` (Finished)
 
 This will be extremely useful while handling `error sync`.
 
-(Finished)
+## 2. Add `Follow` set for each kind of `Field` (Finished)
 
-## 2. Add `Follow` set for each kind of `Field`
+## 3. Add `totally support` of `error sync` (Finished)
 
-(Finished)
-
-## 3. Add `totally support` of `error sync`, mainly for
+It's **mainly for**
 
 - [x] l-exp
 - [x] exp
@@ -22,7 +20,7 @@ This will be extremely useful while handling `error sync`.
 - [x] id
 - [x] integer
 
-## 4. Deal with `Token::LexicalError` while `<id> / <integer>` appeared as the `first generation` of any `sub formula`
+## 4. Deal with `Token::LexicalError` while `<id> / <integer>` appeared as the `first generation` of any `sub formula` (Finished)
 
 Only need to consider:
 
