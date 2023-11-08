@@ -25,12 +25,14 @@ pub enum VN {
 
 /// BasicSyntaxUnit
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum BSu {
+pub enum BasicField {
   VN(VN),
   VT(String),
 }
 
-impl From<&str> for BSu {
+pub type BF = BasicField;
+
+impl From<&str> for BasicField {
   fn from(value: &str) -> Self {
     Self::VT(value.to_string())
   }
@@ -38,14 +40,15 @@ impl From<&str> for BSu {
 
 /// SyntaxUnit
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Su {
+pub enum Field {
   /// Optional
-  O(BSu),
+  O(BasicField),
   /// Required
-  R(BSu),
+  R(BasicField),
 }
 
-pub type Candidate = Vec<Su>;
+pub type F = Field;
+pub type Candidate = Vec<Field>;
 pub type C = Candidate;
 
 #[allow(unused)]
