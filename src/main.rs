@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 #[cfg(test)]
 use pl_0::lexer::Lexer;
-use pl_0::{parser::Parser, pest_parser::PestParser, SEP};
+use pl_0::parser::Parser;
 use project_root::get_project_root;
 use std::{env::args, fs::File, io::Read};
 
@@ -17,25 +17,11 @@ fn compile_from_file(src: &str) {
     .unwrap();
   let mut parser = Parser::new(&string_buf);
   parser.parse();
-  parser.show_ast();
-}
-
-#[allow(dead_code)]
-#[deprecated]
-fn compile_from_file_with_pest(src: &str) {
-  let unparsed_file = std::fs::read_to_string(src).expect("cannot read source file");
-  let ast = PestParser::parse_content(&unparsed_file);
-  println!("AST:");
-  println!("{}", SEP.as_str());
-  match ast {
-    Some(ast) => println!("{ast:?}"),
-    None => println!("None"),
-  }
+  parser.show_sat();
 }
 
 fn main() {
   if let [_, source, ..] = &ARGS[..] {
-    // compile_from_file_with_pest((PROJECT_ROOT.to_string() + source.as_str()).as_str());
     compile_from_file((PROJECT_ROOT.to_string() + source.as_str()).as_str());
   } else {
     println!("Usage: {} <source_path>", ARGS[0]);
@@ -67,7 +53,7 @@ mod demo {
     let ctx = &file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/one_plus_two.pas");
     let mut parser = Parser::new(ctx);
     parser.parse();
-    parser.show_ast();
+    parser.show_sat();
   }
 
   #[test]
@@ -77,7 +63,7 @@ mod demo {
       file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/chinese_programming.pas");
     let mut parser = Parser::new(&content);
     parser.parse();
-    parser.show_ast();
+    parser.show_sat();
   }
 
   #[test]
@@ -87,7 +73,7 @@ mod demo {
       file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/japanese_programming.pas");
     let mut parser = Parser::new(&content);
     parser.parse();
-    parser.show_ast();
+    parser.show_sat();
   }
 
   #[test]
@@ -97,7 +83,7 @@ mod demo {
       file_to_string(PROJECT_ROOT.to_string() + "/examples/parser/chinese_in_keyword.pas");
     let mut parser = Parser::new(&content);
     parser.parse();
-    parser.show_ast();
+    parser.show_sat();
   }
 
   #[test]
@@ -107,7 +93,7 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/lexer/single_colon.pas",
     ))
     .parse()
-    .show_ast();
+    .show_sat();
   }
 
   #[test]
@@ -117,7 +103,7 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/lexer/unsupported_ascii_char.pas",
     ))
     .parse()
-    .show_ast();
+    .show_sat();
   }
 
   #[test]
@@ -127,7 +113,7 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/lexer/japanese_programming.pas",
     ))
     .parse()
-    .show_ast();
+    .show_sat();
   }
 
   #[test]
@@ -137,7 +123,7 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/parser/losing_prog_id.pas",
     ))
     .parse()
-    .show_ast();
+    .show_sat();
   }
 
   #[test]
@@ -147,7 +133,7 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/parser/losing_eqsign.pas",
     ))
     .parse()
-    .show_ast();
+    .show_sat();
   }
 
   #[test]
@@ -157,7 +143,7 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/parser/multi_err.pas",
     ))
     .parse()
-    .show_ast();
+    .show_sat();
   }
 
   #[test]
@@ -167,6 +153,6 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/parser/wrong_if.pas",
     ))
     .parse()
-    .show_ast();
+    .show_sat();
   }
 }

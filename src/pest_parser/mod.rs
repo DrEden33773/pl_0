@@ -1,12 +1,12 @@
 use pest::Parser;
 use pest_derive::Parser;
 
-use crate::ast::ProgramExpr;
+use crate::sat::ProgramExpr;
 
 #[derive(Parser)]
 #[grammar = "pest_parser/grammar.pest"]
 pub struct PestParser {
-  pub ast_entry: Option<Box<ProgramExpr>>,
+  pub sat_entry: Option<Box<ProgramExpr>>,
 }
 
 impl PestParser {
