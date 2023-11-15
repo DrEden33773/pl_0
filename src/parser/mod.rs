@@ -14,7 +14,6 @@ pub struct Parser<'a> {
   lexer: Lexer<'a>,
   ast_entry: Option<Box<ProgramExpr>>,
   has_error: bool,
-  panic_mode: bool,
 }
 
 impl<'a> Parser<'a> {
@@ -30,7 +29,6 @@ impl<'a> Parser<'a> {
       eprintln!("{}", err);
       self.lexer.next();
       self.has_error = true;
-      self.panic_mode = true;
     } else if t != token {
       let unexpected_t = t.to_owned();
       let err = CompileErrorBuilder::syntax_error_template()
@@ -40,13 +38,9 @@ impl<'a> Parser<'a> {
       eprintln!("{}", err);
       if !TOKEN_FOLLOW_TABLE.get(&token).unwrap().contains(&t) {
         self.lexer.next();
-        self.panic_mode = true;
-      } else {
-        self.panic_mode = false;
       }
       self.has_error = true;
     } else {
-      self.panic_mode = false;
       self.lexer.next();
     }
   }
@@ -80,11 +74,11 @@ impl<'a> Parser<'a> {
       eprintln!("{}", err);
       self.lexer.next();
       self.has_error = true;
-      self.panic_mode = true;
+
       Err(true)
     } else if let Token::Identifier(id) = t {
       self.lexer.next();
-      self.panic_mode = false;
+
       Ok(id)
     } else {
       self.has_error = true;
@@ -94,9 +88,6 @@ impl<'a> Parser<'a> {
         .contains(&t)
       {
         self.lexer.next();
-        self.panic_mode = true;
-      } else {
-        self.panic_mode = false;
       }
       Err(false)
     }
@@ -114,11 +105,11 @@ impl<'a> Parser<'a> {
       eprintln!("{}", err);
       self.lexer.next();
       self.has_error = true;
-      self.panic_mode = true;
+
       Err(true)
     } else if let Token::Integer(num) = t {
       self.lexer.next();
-      self.panic_mode = false;
+
       Ok(num)
     } else {
       self.has_error = true;
@@ -128,9 +119,6 @@ impl<'a> Parser<'a> {
         .contains(&t)
       {
         self.lexer.next();
-        self.panic_mode = true;
-      } else {
-        self.panic_mode = false;
       }
       Err(false)
     }
@@ -143,7 +131,6 @@ impl<'a> Parser<'a> {
       lexer: Lexer::new(ctx),
       ast_entry: None,
       has_error: false,
-      panic_mode: false,
     }
   }
 

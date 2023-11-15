@@ -510,17 +510,14 @@ impl<'a> Parser<'a> {
   /// <factor> -> <id> | <integer> | (<exp>)
   fn parse_factor(&mut self) -> Option<Box<FactorExpr>> {
     if self.match_next(Token::ParL) {
-      self.panic_mode = false;
       self.consume_next(Token::ParL);
       let exp = self.parse_exp();
       self.consume_next(Token::ParR);
       exp.map(|exp| Box::new(FactorExpr::Exp(exp)))
     } else if matches!(self.lexer.peek(), Some(Token::Identifier(_))) {
-      self.panic_mode = false;
       let id = self.parse_id();
       id.map(|id| Box::new(FactorExpr::Id(id)))
     } else if matches!(self.lexer.peek(), Some(Token::Integer(_))) {
-      self.panic_mode = false;
       let integer = self.parse_integer();
       integer.map(|integer| Box::new(FactorExpr::Integer(integer)))
     } else if matches!(self.lexer.peek(), Some(Token::LexicalError(_))) {
@@ -551,13 +548,9 @@ impl<'a> Parser<'a> {
       if let Some(t) = unexpected_t {
         if !FIELD_FOLLOW_TABLE.get(&Field::Factor).unwrap().contains(&t) {
           self.lexer.next();
-          self.panic_mode = true;
-        } else {
-          self.panic_mode = false;
         }
       } else {
         self.lexer.next();
-        self.panic_mode = true;
       }
       None
     }
@@ -569,32 +562,26 @@ impl<'a> Parser<'a> {
     match self.lexer.peek() {
       Some(token) => match token {
         Token::Eq => {
-          self.panic_mode = false;
           self.lexer.next();
           Some(Box::new(LopExpr::Eq))
         }
         Token::Lt => {
-          self.panic_mode = false;
           self.lexer.next();
           Some(Box::new(LopExpr::Lt))
         }
         Token::Gt => {
-          self.panic_mode = false;
           self.lexer.next();
           Some(Box::new(LopExpr::Gt))
         }
         Token::Le => {
-          self.panic_mode = false;
           self.lexer.next();
           Some(Box::new(LopExpr::Le))
         }
         Token::Ge => {
-          self.panic_mode = false;
           self.lexer.next();
           Some(Box::new(LopExpr::Ge))
         }
         Token::Ne => {
-          self.panic_mode = false;
           self.lexer.next();
           Some(Box::new(LopExpr::Ne))
         }
@@ -615,9 +602,6 @@ impl<'a> Parser<'a> {
             .contains(&unexpected_t)
           {
             self.lexer.next();
-            self.panic_mode = true;
-          } else {
-            self.panic_mode = false;
           }
           None
         }
@@ -630,7 +614,7 @@ impl<'a> Parser<'a> {
           .build();
         eprintln!("{}", err);
         self.lexer.next();
-        self.panic_mode = true;
+
         None
       }
     }
@@ -640,11 +624,9 @@ impl<'a> Parser<'a> {
   /// <aop> -> + | -
   fn parse_aop(&mut self) -> Option<Box<AopExpr>> {
     if self.match_next(Token::Add) {
-      self.panic_mode = false;
       self.consume_next(Token::Add);
       Some(Box::new(AopExpr::Add))
     } else if self.match_next(Token::Sub) {
-      self.panic_mode = false;
       self.consume_next(Token::Sub);
       Some(Box::new(AopExpr::Sub))
     } else {
@@ -664,13 +646,9 @@ impl<'a> Parser<'a> {
       if let Some(t) = unexpected_t {
         if !FIELD_FOLLOW_TABLE.get(&Field::Aop).unwrap().contains(&t) {
           self.lexer.next();
-          self.panic_mode = true;
-        } else {
-          self.panic_mode = false;
         }
       } else {
         self.lexer.next();
-        self.panic_mode = true;
       }
       None
     }
@@ -702,13 +680,9 @@ impl<'a> Parser<'a> {
       if let Some(t) = unexpected_t {
         if !FIELD_FOLLOW_TABLE.get(&Field::Mop).unwrap().contains(&t) {
           self.lexer.next();
-          self.panic_mode = true;
-        } else {
-          self.panic_mode = false;
         }
       } else {
         self.lexer.next();
-        self.panic_mode = true;
       }
       None
     }
