@@ -1,6 +1,5 @@
 use super::*;
 
-#[allow(dead_code)]
 #[derive(Debug, PartialEq, PartialOrd, Eq, Ord, Clone, Copy, Hash)]
 pub(crate) enum Field {
   Prog,
