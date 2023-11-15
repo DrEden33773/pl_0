@@ -1,5 +1,5 @@
 use self::token_def::Token;
-use crate::error::{compile_error::CompileError, PL0Error};
+use crate::error::{compile_error::CompileError, error_builder::CompileErrorBuilder};
 use std::{iter::Peekable, str::Chars};
 
 #[cfg(not(feature = "debug"))]
@@ -17,9 +17,8 @@ pub trait LexerIterator {
 pub struct Lexer<'a> {
   source: Peekable<Chars<'a>>,
   ahead: Option<Token>,
-  line_num: usize,
-  col_num: usize,
-  lexical_errors: Vec<PL0Error>,
+  pub(super) line_num: usize,
+  pub(super) col_num: usize,
 }
 
 impl<'a> Iterator for Lexer<'a> {
@@ -45,37 +44,9 @@ impl<'a> LexerIterator for Lexer<'a> {
   }
 }
 
-#[allow(dead_code)]
 impl<'a> Lexer<'a> {
   #[deprecated]
-  fn panic(&self, message: String) -> ! {
-    #[cfg(not(feature = "debug"))]
-    {
-      println!(
-        "Error[Line({}), Col({})] :: {}",
-        self.line_num, self.col_num, message
-      );
-      exit(-1)
-    }
-    #[cfg(feature = "debug")]
-    {
-      panic!(
-        "Error[Line({}), Col({})] :: {}",
-        self.line_num, self.col_num, message
-      )
-    }
-  }
-
-  fn sync_to_curr_token_last_char(&mut self) {
-    loop {
-      if self.peek_char().is_whitespace() {
-        break;
-      } else {
-        self.next_char();
-      }
-    }
-  }
-
+  #[allow(dead_code)]
   pub(super) fn panic_compile_error(
     &mut self,
     mut error_template: CompileError,
@@ -84,37 +55,53 @@ impl<'a> Lexer<'a> {
     error_template.line = self.line_num;
     error_template.col = self.col_num;
     error_template.info = message;
-    let pl0error: PL0Error = error_template.into();
-    self.lexical_errors.push(pl0error.to_owned());
-    panic!("{}", pl0error);
+    panic!("{}", error_template);
   }
 }
 
 impl<'a> Lexer<'a> {
-  fn ascii_char_handler(&mut self, c: char) -> char {
+  fn ascii_char_handler(&mut self, c: char) -> Result<char, Token> {
     if c.is_ascii() {
-      c
+      Ok(c)
     } else {
-      self.panic_compile_error(
-        CompileError::lexical_error_template(),
-        format!("'{c}' is not an ASCII character"),
-      );
-      // '\0'
+      self.next_char();
+      Err(
+        CompileErrorBuilder::lexical_error_template()
+          .with_lexer_ref(self)
+          .with_info(format!("'{}' is not an ASCII character", c))
+          .build()
+          .into(),
+      )
     }
   }
 
   #[allow(dead_code)]
-  fn read_char(&mut self) -> char {
-    match self.next_char() {
-      Some(c) => self.ascii_char_handler(c),
-      None => '\0',
+  fn ascii_char_handler_without_skipping_lexical_error(&mut self, c: char) -> Result<char, Token> {
+    if c.is_ascii() {
+      Ok(c)
+    } else {
+      Err(
+        CompileErrorBuilder::lexical_error_template()
+          .with_lexer_ref(self)
+          .with_info(format!("'{}' is not an ASCII character", c))
+          .build()
+          .into(),
+      )
     }
   }
 
-  fn peek_char(&mut self) -> char {
+  #[allow(dead_code)]
+  fn read_char(&mut self) -> Result<char, Token> {
+    match self.next_char() {
+      Some(c) => self.ascii_char_handler(c),
+      None => Ok('\0'),
+    }
+  }
+
+  fn peek_char(&mut self) -> Result<char, Token> {
     match self.source.peek() {
       Some(&c) => self.ascii_char_handler(c),
-      None => '\0',
+      None => Ok('\0'),
     }
   }
 
@@ -135,8 +122,11 @@ impl<'a> Lexer<'a> {
     failed: Token,
   ) -> Token {
     let c = self.peek_char();
+    if c.as_ref().is_err() {
+      return c.unwrap_err();
+    }
     for (ahead, candidate) in ahead_cases.into_iter().zip(candidates) {
-      if c == ahead {
+      if *c.as_ref().unwrap() == ahead {
         self.next_char();
         return candidate;
       }
@@ -164,38 +154,37 @@ impl<'a> Lexer<'a> {
         '=' => Some(Token::Eq),
         ';' => Some(Token::Semicolon),
         ',' => Some(Token::Comma),
-        // '.' => Some(Token::Dot),
         '<' => Some(self.check_ahead(vec!['=', '>'], vec![Token::Le, Token::Ne], Token::Lt)),
         '>' => Some(self.check_ahead(vec!['='], vec![Token::Ge], Token::Gt)),
         ':' => match self.peek_char() {
-          '=' => {
-            self.next_char();
-            Some(Token::EqSign)
-          }
-          _ => {
-            self.panic_compile_error(
-              CompileError::lexical_error_template(),
-              format!("'{c}' is an undefined sign, did you mean ':='?"),
-            );
-            // None
-          }
+          Ok(c) => match c {
+            '=' => {
+              self.next_char();
+              Some(Token::EqSign)
+            }
+            _ => Some(Token::LexicalError(
+              CompileErrorBuilder::lexical_error_template()
+                .with_lexer_ref(self)
+                .with_info("':' is an undefined sign, did you mean ':='?".to_string())
+                .build(),
+            )),
+          },
+          Err(err_token) => Some(err_token),
         },
         '0'..='9' => self.lexing_integer(c),
         'a'..='z' | 'A'..='Z' => self.lexing_identifier(c),
-        c if !c.is_ascii() => {
-          self.panic_compile_error(
-            CompileError::lexical_error_template(),
-            format!("'{c}' is not an ASCII character"),
-          );
-          // None
-        }
-        _ => {
-          self.panic_compile_error(
-            CompileError::lexical_error_template(),
-            format!("'{c}' is an unexpected character"),
-          );
-          // None
-        }
+        c if !c.is_ascii() => Some(Token::LexicalError(
+          CompileErrorBuilder::lexical_error_template()
+            .with_lexer_ref(self)
+            .with_info(format!("'{}' is not an ASCII character", c))
+            .build(),
+        )),
+        _ => Some(Token::LexicalError(
+          CompileErrorBuilder::lexical_error_template()
+            .with_lexer_ref(self)
+            .with_info(format!("'{}' is an unexpected character", c))
+            .build(),
+        )),
       }
     } else {
       None
@@ -210,7 +199,6 @@ impl<'a> Lexer<'a> {
       ahead: None,
       line_num: 1,
       col_num: 0, // MUST be zero!
-      lexical_errors: vec![],
     }
   }
 }

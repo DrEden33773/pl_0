@@ -30,16 +30,21 @@ impl<'a> Lexer<'a> {
     let mut identifier = format!("{first}");
     loop {
       let c = self.peek_char();
-      if c.is_alphanumeric() {
+      match c.is_err() {
+        true => return c.unwrap_err().into(),
+        false => (),
+      }
+      let c = c.unwrap();
+      if c.is_alphabetic() {
         self.next_char();
         identifier.push(c);
       } else if c == '_' {
-        self.panic_compile_error(
-          CompileError::lexical_error_template(),
-          "'_' is not supported for identifier declaration".to_string(),
-        );
-        // self.sync_to_curr_token_last_char();
-        // return None;
+        return Some(Token::LexicalError(
+          CompileErrorBuilder::lexical_error_template()
+            .with_lexer_ref(self)
+            .with_info("'_' is not supported for identifier declaration".to_string())
+            .build(),
+        ));
       } else {
         break;
       }
@@ -54,16 +59,21 @@ impl<'a> Lexer<'a> {
 impl<'a> Lexer<'a> {
   pub(super) fn lexing_integer(&mut self, first: char) -> Option<Token> {
     if !first.is_ascii_digit() {
-      self.panic_compile_error(
-        CompileError::lexical_error_template(),
-        format!("'{first}' is not a digit"),
-      );
-      // self.sync_to_curr_token_last_char();
-      // return None;
+      return Some(Token::LexicalError(
+        CompileErrorBuilder::lexical_error_template()
+          .with_lexer_ref(self)
+          .with_info(format!("'{first}' is not a digit"))
+          .build(),
+      ));
     }
     let mut scanned = first.to_digit(10).unwrap() as i64;
     loop {
       let c = self.peek_char();
+      match c.is_err() {
+        true => return c.unwrap_err().into(),
+        false => (),
+      }
+      let c = c.unwrap();
       if c.is_ascii_digit() {
         self.next_char();
         scanned = scanned * 10 + c.to_digit(10).unwrap() as i64;

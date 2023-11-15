@@ -1,10 +1,10 @@
 pub mod compile_error;
+pub mod error_builder;
 pub mod runtime_error;
 pub mod traits;
 
-use std::{error::Error, fmt::Display};
-
 use self::{compile_error::CompileError, runtime_error::RuntimeError};
+use std::{error::Error, fmt::Display};
 
 #[derive(Debug, Clone)]
 pub enum PL0Error {

@@ -1,8 +1,10 @@
-# PL_0
+# PL/0 (aka. PL_0)
 
 ## Introduction
 
-`PL_0` is a `subset language` of `Pascal`.
+`PL/0` is a `subset language` of `Pascal`.
+
+This is a simple `Rust` implementation of `PL/0` compiler.
 
 ## BNF
 
@@ -50,9 +52,9 @@ However, it's necessary to prove that the given [BNF](#bnf) satisfy the definiti
 
 Proof will be given later.
 
-### TODO: Error Handling
+### Error Handling
 
-I'll adapt the welcomed `panic-mode` error handling strategy for this part, to make sure that the `compiler` could find as many errors as possible in one run, instead of being halted by the first error.
+I'll adapt the welcomed `panic-mode-liked` error handling strategy for this part, to make sure that the `compiler` could find as many errors as possible in one run, instead of being halted by the first error.
 
 ## Feasibility Analysis
 
@@ -60,9 +62,13 @@ I'll adapt the welcomed `panic-mode` error handling strategy for this part, to m
 
 To satisfy this, 3 conditions should be met:
 
-1. $$ \text{No \textit{left recursion pattern} detected in the \textit{grammar}} $$
-2. $$ \forall A \in V_N (A \rightarrow \alpha_1 | \alpha_2 | \dots | \alpha_n) \Rightarrow First(\alpha_i) \cap First(\alpha_j) = \Phi ~ (i \ne j) $$
-3. $$ \forall A \in V_N (\epsilon \in First(A)) \Rightarrow First(A) \cap Follow(A) = \Phi $$
+$$
+\begin{align*}
+\text{Condition\#1} &~\dots~ \text{No \textit{left recursion pattern} detected in the \textit{grammar}} \\
+\text{Condition\#2} &~\dots~ \forall A \in V_N (A \rightarrow \alpha_1 | \alpha_2 | \dots | \alpha_n) \Rightarrow First(\alpha_i) \cap First(\alpha_j) = \Phi ~ (i \ne j) \\
+\text{Condition\#3} &~\dots~ \forall A \in V_N (\epsilon \in First(A)) \Rightarrow First(A) \cap Follow(A) = \Phi
+\end{align*}
+$$
 
 Now, let's prove them one by one!
 
@@ -78,8 +84,8 @@ Which means that, there's no _left recursion pattern_ detected in the _grammar_.
 
 #### Condition#2
 
-TODO:
+This could be easy, with the reference of [BNF](#bnf) and [first_follow_table](./src/parser/synchronizer/tables.rs)
 
 #### Condition#3
 
-TODO:
+Just the same as `Condition#2`

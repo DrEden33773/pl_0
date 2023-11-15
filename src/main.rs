@@ -10,7 +10,6 @@ static PROJECT_ROOT: Lazy<String> =
   Lazy::new(|| get_project_root().unwrap().to_str().unwrap().to_string());
 
 fn compile_from_file(src: &str) {
-  // std::env::set_current_dir(PROJECT_ROOT.as_str()).unwrap();
   let mut string_buf = String::new();
   File::open(src)
     .unwrap()
@@ -18,10 +17,11 @@ fn compile_from_file(src: &str) {
     .unwrap();
   let mut parser = Parser::new(&string_buf);
   parser.parse();
-  parser.show_ugly_ast();
+  parser.show_ast();
 }
 
 #[allow(dead_code)]
+#[deprecated]
 fn compile_from_file_with_pest(src: &str) {
   let unparsed_file = std::fs::read_to_string(src).expect("cannot read source file");
   let ast = PestParser::parse_content(&unparsed_file);
@@ -67,38 +67,106 @@ mod demo {
     let ctx = &file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/one_plus_two.pas");
     let mut parser = Parser::new(ctx);
     parser.parse();
-    parser.show_ugly_ast();
+    parser.show_ast();
   }
 
   #[test]
   #[should_panic]
   fn chinese_character_demo() {
-    Lexer::dbg_one_pass(&file_to_string(
-      PROJECT_ROOT.to_string() + "/examples/lexer/chinese_programming.pas",
-    ));
+    let content =
+      file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/chinese_programming.pas");
+    let mut parser = Parser::new(&content);
+    parser.parse();
+    parser.show_ast();
+  }
+
+  #[test]
+  #[should_panic]
+  fn japanese_character_demo() {
+    let content =
+      file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/japanese_programming.pas");
+    let mut parser = Parser::new(&content);
+    parser.parse();
+    parser.show_ast();
+  }
+
+  #[test]
+  #[should_panic]
+  fn chinese_in_keyword_demo() {
+    let content =
+      file_to_string(PROJECT_ROOT.to_string() + "/examples/parser/chinese_in_keyword.pas");
+    let mut parser = Parser::new(&content);
+    parser.parse();
+    parser.show_ast();
   }
 
   #[test]
   #[should_panic]
   fn single_colon_demo() {
-    Lexer::dbg_one_pass(&file_to_string(
+    Parser::new(&file_to_string(
       PROJECT_ROOT.to_string() + "/examples/lexer/single_colon.pas",
-    ));
+    ))
+    .parse()
+    .show_ast();
   }
 
   #[test]
   #[should_panic]
   fn unsupported_ascii_char_demo() {
-    Lexer::dbg_one_pass(&file_to_string(
+    Parser::new(&file_to_string(
       PROJECT_ROOT.to_string() + "/examples/lexer/unsupported_ascii_char.pas",
-    ));
+    ))
+    .parse()
+    .show_ast();
   }
 
   #[test]
   #[should_panic]
   fn malformed_char_demo() {
-    Lexer::dbg_one_pass(&file_to_string(
+    Parser::new(&file_to_string(
       PROJECT_ROOT.to_string() + "/examples/lexer/japanese_programming.pas",
-    ));
+    ))
+    .parse()
+    .show_ast();
+  }
+
+  #[test]
+  #[should_panic]
+  fn losing_prog_id_demo() {
+    Parser::new(&file_to_string(
+      PROJECT_ROOT.to_string() + "/examples/parser/losing_prog_id.pas",
+    ))
+    .parse()
+    .show_ast();
+  }
+
+  #[test]
+  #[should_panic]
+  fn losing_eqsign_demo() {
+    Parser::new(&file_to_string(
+      PROJECT_ROOT.to_string() + "/examples/parser/losing_eqsign.pas",
+    ))
+    .parse()
+    .show_ast();
+  }
+
+  #[test]
+  #[should_panic]
+  fn multi_err_demo() {
+    Parser::new(&file_to_string(
+      PROJECT_ROOT.to_string() + "/examples/parser/multi_err.pas",
+    ))
+    .parse()
+    .show_ast();
+  }
+
+  #[test]
+  #[should_panic]
+  fn wrong_if_demo() {
+    Parser::new(&file_to_string(
+      PROJECT_ROOT.to_string() + "/examples/parser/wrong_if.pas",
+    ))
+    .parse()
+    .show_ast();
   }
 }
