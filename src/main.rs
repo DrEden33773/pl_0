@@ -1,6 +1,4 @@
 use once_cell::sync::Lazy;
-#[cfg(test)]
-use pl_0::lexer::Lexer;
 use pl_0::parser::Parser;
 use project_root::get_project_root;
 use std::{env::args, fs::File, io::Read};
@@ -31,6 +29,7 @@ fn main() {
 #[cfg(test)]
 mod demo {
   use super::*;
+  use pl_0::lexer::Lexer;
 
   fn file_to_string(filename: String) -> String {
     let mut string_buf = String::new();
