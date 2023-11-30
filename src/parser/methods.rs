@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
+  ast::*,
   parser::synchronizer::tables::{Field, FIELD_FOLLOW_TABLE},
-  sat::*,
 };
 
 impl<'a> Parser<'a> {

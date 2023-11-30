@@ -15,7 +15,7 @@ fn compile_from_file(src: &str) {
     .unwrap();
   let mut parser = Parser::new(&string_buf);
   parser.parse();
-  parser.show_sat();
+  parser.show_ast();
 }
 
 fn main() {
@@ -52,7 +52,7 @@ mod demo {
     let ctx = &file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/one_plus_two.pas");
     let mut parser = Parser::new(ctx);
     parser.parse();
-    parser.show_sat();
+    parser.show_ast();
   }
 
   #[test]
@@ -62,7 +62,7 @@ mod demo {
       file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/chinese_programming.pas");
     let mut parser = Parser::new(&content);
     parser.parse();
-    parser.show_sat();
+    parser.show_ast();
   }
 
   #[test]
@@ -72,7 +72,7 @@ mod demo {
       file_to_string(PROJECT_ROOT.to_string() + "/examples/lexer/japanese_programming.pas");
     let mut parser = Parser::new(&content);
     parser.parse();
-    parser.show_sat();
+    parser.show_ast();
   }
 
   #[test]
@@ -82,7 +82,7 @@ mod demo {
       file_to_string(PROJECT_ROOT.to_string() + "/examples/parser/chinese_in_keyword.pas");
     let mut parser = Parser::new(&content);
     parser.parse();
-    parser.show_sat();
+    parser.show_ast();
   }
 
   #[test]
@@ -92,7 +92,7 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/lexer/single_colon.pas",
     ))
     .parse()
-    .show_sat();
+    .show_ast();
   }
 
   #[test]
@@ -102,7 +102,7 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/lexer/unsupported_ascii_char.pas",
     ))
     .parse()
-    .show_sat();
+    .show_ast();
   }
 
   #[test]
@@ -112,7 +112,7 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/lexer/japanese_programming.pas",
     ))
     .parse()
-    .show_sat();
+    .show_ast();
   }
 
   #[test]
@@ -122,7 +122,7 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/parser/losing_prog_id.pas",
     ))
     .parse()
-    .show_sat();
+    .show_ast();
   }
 
   #[test]
@@ -132,7 +132,7 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/parser/losing_eqsign.pas",
     ))
     .parse()
-    .show_sat();
+    .show_ast();
   }
 
   #[test]
@@ -142,7 +142,7 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/parser/multi_err.pas",
     ))
     .parse()
-    .show_sat();
+    .show_ast();
   }
 
   #[test]
@@ -152,6 +152,6 @@ mod demo {
       PROJECT_ROOT.to_string() + "/examples/parser/wrong_if.pas",
     ))
     .parse()
-    .show_sat();
+    .show_ast();
   }
 }

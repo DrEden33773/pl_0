@@ -2,17 +2,17 @@ pub mod methods;
 pub mod synchronizer;
 
 use crate::{
+  ast::ProgramExpr,
   error::error_builder::CompileErrorBuilder,
   lexer::{token_def::Token, Lexer, LexerIterator},
   parser::synchronizer::tables::TOKEN_FOLLOW_TABLE,
-  sat::ProgramExpr,
   SEP,
 };
 
 #[derive(Debug)]
 pub struct Parser<'a> {
   lexer: Lexer<'a>,
-  sat_entry: Option<Box<ProgramExpr>>,
+  ast_entry: Option<Box<ProgramExpr>>,
   has_error: bool,
 }
 
@@ -129,7 +129,7 @@ impl<'a> Parser<'a> {
   pub fn new(ctx: &'a str) -> Self {
     Self {
       lexer: Lexer::new(ctx),
-      sat_entry: None,
+      ast_entry: None,
       has_error: false,
     }
   }
@@ -139,14 +139,14 @@ impl<'a> Parser<'a> {
     if self.has_error {
       panic!("|> Errors above occurred (during `parsing`), compiling stopped ... <|\n");
     }
-    self.sat_entry = program_expr;
+    self.ast_entry = program_expr;
     self
   }
 
-  pub fn show_sat(&mut self) -> &mut Self {
-    println!("ST (Syntax Analysis Tree):");
+  pub fn show_ast(&mut self) -> &mut Self {
+    println!("AST (Abstract Syntax Tree):");
     println!("{}", SEP.as_str());
-    match &self.sat_entry {
+    match &self.ast_entry {
       Some(ctx) => println!("{:#?}", ctx),
       None => println!("None"),
     }
