@@ -128,5 +128,5 @@ pub enum MopExpr {
 #[derive(Debug, Clone)]
 pub struct IdExpr(pub String);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct IntegerExpr(pub i64);

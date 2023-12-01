@@ -1,7 +1,6 @@
+use crate::ast::ProgramExpr;
 use pest::Parser;
 use pest_derive::Parser;
-
-use crate::ast::ProgramExpr;
 
 #[derive(Parser)]
 #[grammar = "pest_parser/grammar.pest"]

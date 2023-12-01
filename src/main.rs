@@ -1,5 +1,5 @@
 use once_cell::sync::Lazy;
-use pl_0::parser::Parser;
+use pl_0::{optimizer::AstOptimizer, parser::Parser};
 use project_root::get_project_root;
 use std::{env::args, fs::File, io::Read};
 
@@ -16,6 +16,7 @@ fn compile_from_file(src: &str) {
   let mut parser = Parser::new(&string_buf);
   parser.parse();
   parser.show_ast();
+  let _optimized_ast_entry = AstOptimizer::from(parser).optimize();
 }
 
 fn main() {
