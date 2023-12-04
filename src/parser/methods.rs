@@ -614,7 +614,6 @@ impl<'a> Parser<'a> {
           .build();
         eprintln!("{}", err);
         self.lexer.next();
-
         None
       }
     }

@@ -1,9 +1,6 @@
 use self::token_def::Token;
-use crate::error::{compile_error::CompileError, error_builder::CompileErrorBuilder};
+use crate::error::error_builder::CompileErrorBuilder;
 use std::{iter::Peekable, str::Chars};
-
-#[cfg(not(feature = "debug"))]
-use std::process::exit;
 
 pub mod methods;
 pub mod token_def;
@@ -41,21 +38,6 @@ impl<'a> LexerIterator for Lexer<'a> {
       self.ahead = self.do_next();
     }
     self.ahead.as_ref()
-  }
-}
-
-impl<'a> Lexer<'a> {
-  #[deprecated]
-  #[allow(dead_code)]
-  pub(super) fn panic_compile_error(
-    &mut self,
-    mut error_template: CompileError,
-    message: String,
-  ) -> ! {
-    error_template.line = self.line_num;
-    error_template.col = self.col_num;
-    error_template.info = message;
-    panic!("{}", error_template);
   }
 }
 
