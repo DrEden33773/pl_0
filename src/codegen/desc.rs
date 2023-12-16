@@ -58,11 +58,11 @@ pub(super) enum UpIndex {
 /// Activation record for `procedure` (aka. `closure`)
 #[derive(Debug, Default, Clone)]
 pub struct ActivationRecord {
-  pub(crate) has_var_args: bool,
-  pub(crate) n_param: usize,
-  pub(crate) constants: Vec<Value>,
-  pub(crate) up_indexes: Vec<UpIndex>,
-  pub(crate) byte_codes: Vec<TraceableByteCode>,
+  pub(super) has_var_args: bool,
+  pub(super) n_param: usize,
+  pub(super) constants: Vec<Value>,
+  pub(super) up_indexes: Vec<UpIndex>,
+  pub(super) byte_codes: Vec<TraceableByteCode>,
 }
 
 /// Level of inner functions, used for matching up_value

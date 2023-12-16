@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 pub mod desc;
 
 use self::desc::ActivationRecord;

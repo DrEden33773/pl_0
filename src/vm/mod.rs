@@ -2,7 +2,6 @@ use crate::{codegen::desc::ActivationRecord, value::Value};
 use std::{cell::RefCell, rc::Rc};
 
 pub mod advanced;
-pub mod basic;
 pub mod lib;
 
 #[derive(Debug)]

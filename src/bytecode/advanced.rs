@@ -3,7 +3,7 @@ pub enum ByteCode {}
 
 #[derive(Debug, Clone, Copy)]
 pub struct TraceableByteCode {
-  pub(crate) bytecode: ByteCode,
-  pub(crate) line_num: usize,
-  pub(crate) col_num: usize,
+  pub(super) bytecode: ByteCode,
+  pub(super) line_num: usize,
+  pub(super) col_num: usize,
 }
