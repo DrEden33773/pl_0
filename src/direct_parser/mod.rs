@@ -1,70 +1,70 @@
-pub mod methods;
-pub mod synchronizer;
+pub mod bnf_frame;
+pub mod desc;
+pub mod detailed_method;
 
+use self::desc::{ActivationRecord, GotoLabel, Level};
 use crate::{
-  ast::ProgramExpr,
   error::error_builder::CompileErrorBuilder,
   lexer::{token_def::Token, Lexer, LexerIterator},
-  optimizer::AstOptimizer,
   parser::synchronizer::tables::TOKEN_FOLLOW_TABLE,
-  SEP,
 };
 
 #[derive(Debug)]
-pub struct Parser<'a> {
+struct ParseContext<'a> {
+  levels: Vec<Level>,
   lexer: Lexer<'a>,
-  ast_entry: Option<Box<ProgramExpr>>,
+}
+
+#[derive(Debug)]
+pub struct DirectParser<'a> {
+  ctx: ParseContext<'a>,
+
+  /// activation_record
+  ar: ActivationRecord,
+  /// stack_pointer
+  sp: usize,
+
+  goto_list: Vec<GotoLabel>,
+  labels: Vec<GotoLabel>,
   has_error: bool,
 }
 
-impl<'a> Parser<'a> {
-  pub fn take_ast_entry(self) -> Box<ProgramExpr> {
-    self.ast_entry.unwrap()
-  }
-}
-
-impl<'a> From<Parser<'a>> for AstOptimizer {
-  fn from(parser: Parser<'a>) -> Self {
-    AstOptimizer::new(parser.ast_entry.unwrap())
-  }
-}
-
-impl<'a> Parser<'a> {
+impl<'a> DirectParser<'a> {
   fn consume_next(&mut self, token: Token) {
-    if self.lexer.peek().is_none() {
+    if self.ctx.lexer.peek().is_none() {
       self.has_error = true;
       return;
     }
 
-    let t = self.lexer.peek().cloned().unwrap();
+    let t = self.ctx.lexer.peek().cloned().unwrap();
 
     if let Token::LexicalError(err) = t {
       eprintln!("{}", err);
-      self.lexer.next();
+      self.ctx.lexer.next();
       self.has_error = true;
     } else if t != token {
       let unexpected_t = t.to_owned();
       let err = CompileErrorBuilder::syntax_error_template()
-        .with_lexer_ref(&self.lexer)
+        .with_lexer_ref(&self.ctx.lexer)
         .with_info(format!("Expected `{}`, but got `{}`", token, unexpected_t))
         .build();
       eprintln!("{}", err);
       if !TOKEN_FOLLOW_TABLE.get(&token).unwrap().contains(&t) {
-        self.lexer.next();
+        self.ctx.lexer.next();
       }
       self.has_error = true;
     } else {
-      self.lexer.next();
+      self.ctx.lexer.next();
     }
   }
 
   fn match_next(&mut self, token: Token) -> bool {
-    if self.lexer.peek().is_none() {
+    if self.ctx.lexer.peek().is_none() {
       self.has_error = true;
       return false;
     }
 
-    let t = self.lexer.peek().cloned().unwrap();
+    let t = self.ctx.lexer.peek().cloned().unwrap();
 
     if let Token::LexicalError(_err) = t {
       // eprintln!("{}", _err); // shouldn't show lexical error while simply matching
@@ -76,20 +76,20 @@ impl<'a> Parser<'a> {
   }
 
   fn consume_next_identifier(&mut self) -> Result<String, bool> {
-    if self.lexer.peek().is_none() {
+    if self.ctx.lexer.peek().is_none() {
       self.has_error = true;
       return Err(false);
     }
 
-    let t = self.lexer.peek().cloned().unwrap();
+    let t = self.ctx.lexer.peek().cloned().unwrap();
 
     if let Token::LexicalError(err) = t {
       eprintln!("{}", err);
-      self.lexer.next();
+      self.ctx.lexer.next();
       self.has_error = true;
       Err(true)
     } else if let Token::Identifier(id) = t {
-      self.lexer.next();
+      self.ctx.lexer.next();
       Ok(id)
     } else {
       self.has_error = true;
@@ -98,27 +98,27 @@ impl<'a> Parser<'a> {
         .unwrap()
         .contains(&t)
       {
-        self.lexer.next();
+        self.ctx.lexer.next();
       }
       Err(false)
     }
   }
 
   fn consume_next_integer(&mut self) -> Result<i64, bool> {
-    if self.lexer.peek().is_none() {
+    if self.ctx.lexer.peek().is_none() {
       self.has_error = true;
       return Err(false);
     }
 
-    let t = self.lexer.peek().cloned().unwrap();
+    let t = self.ctx.lexer.peek().cloned().unwrap();
 
     if let Token::LexicalError(err) = t {
       eprintln!("{}", err);
-      self.lexer.next();
+      self.ctx.lexer.next();
       self.has_error = true;
       Err(true)
     } else if let Token::Integer(num) = t {
-      self.lexer.next();
+      self.ctx.lexer.next();
       Ok(num)
     } else {
       self.has_error = true;
@@ -127,39 +127,9 @@ impl<'a> Parser<'a> {
         .unwrap()
         .contains(&t)
       {
-        self.lexer.next();
+        self.ctx.lexer.next();
       }
       Err(false)
     }
-  }
-}
-
-impl<'a> Parser<'a> {
-  pub fn new(ctx: &'a str) -> Self {
-    Self {
-      lexer: Lexer::new(ctx),
-      ast_entry: None,
-      has_error: false,
-    }
-  }
-
-  pub fn parse(&mut self) -> &mut Self {
-    let program_expr = self.parse_program();
-    if self.has_error {
-      panic!("|> Errors above occurred (during `parsing`), compiling stopped ... <|\n");
-    }
-    self.ast_entry = program_expr;
-    self
-  }
-
-  pub fn show_ast(&mut self) -> &mut Self {
-    println!("AST (Abstract Syntax Tree):");
-    println!("{}", SEP.as_str());
-    match &self.ast_entry {
-      Some(ctx) => println!("{:#?}", ctx),
-      None => println!("None"),
-    }
-    println!("{}", SEP.as_str());
-    self
   }
 }

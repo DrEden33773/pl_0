@@ -9,6 +9,7 @@ pub mod optimizer;
 pub mod parser;
 pub mod pest_parser;
 pub mod util;
+pub mod value;
 pub mod vm;
 
 pub static SEP: Lazy<String> = Lazy::new(|| "=".repeat(60));

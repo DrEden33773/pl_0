@@ -7,9 +7,9 @@ pub struct AstOptimizer {
 }
 
 impl AstOptimizer {
-  pub fn optimize(&mut self) -> Box<ProgramExpr> {
+  pub fn optimize(self) -> Box<ProgramExpr> {
     println!("Unimplemented AstOptimizer, use the raw AST instead");
-    self.ast_entry.to_owned()
+    self.ast_entry
   }
 }
 
