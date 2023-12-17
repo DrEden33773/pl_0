@@ -13,6 +13,24 @@ pub enum Value {
   PL0Closure(Rc<PL0Closure>),
 }
 
+impl From<()> for Value {
+  fn from(_: ()) -> Self {
+    Self::Nil
+  }
+}
+
+impl From<Rc<PL0Closure>> for Value {
+  fn from(v: Rc<PL0Closure>) -> Self {
+    Self::PL0Closure(v)
+  }
+}
+
+impl From<i64> for Value {
+  fn from(v: i64) -> Self {
+    Self::Integer(v)
+  }
+}
+
 impl Hash for Value {
   fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
     match self {
