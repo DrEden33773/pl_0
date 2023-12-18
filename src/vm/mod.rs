@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::{codegen::desc::ActivationRecord, value::Value};
 use std::{cell::RefCell, rc::Rc};
 
@@ -17,6 +19,7 @@ impl UpValue {
       UpValue::Closed(v) => v,
     }
   }
+
   fn set(&mut self, stack: &mut [Value], value: Value) {
     match self {
       UpValue::Open(i) => stack[*i] = value,

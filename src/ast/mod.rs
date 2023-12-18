@@ -1,3 +1,15 @@
+use crate::lexer::Lexer;
+
+/// - format = (line_number, colon_number)
+#[derive(Debug, Clone, Copy)]
+pub struct Info(usize, usize);
+
+impl From<&Lexer<'_>> for Info {
+  fn from(lexer: &Lexer<'_>) -> Self {
+    Self(lexer.line_num, lexer.col_num)
+  }
+}
+
 #[derive(Debug, Clone)]
 pub struct ProgramExpr {
   pub id: Box<IdExpr>,
@@ -105,28 +117,28 @@ pub enum FactorExpr {
 
 #[derive(Debug, Clone, Copy)]
 pub enum LopExpr {
-  Eq,
-  Ne,
-  Lt,
-  Le,
-  Gt,
-  Ge,
+  Eq(Info),
+  Ne(Info),
+  Lt(Info),
+  Le(Info),
+  Gt(Info),
+  Ge(Info),
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum AopExpr {
-  Add,
-  Sub,
+  Add(Info),
+  Sub(Info),
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum MopExpr {
-  Mul,
-  Div,
+  Mul(Info),
+  Div(Info),
 }
 
 #[derive(Debug, Clone)]
-pub struct IdExpr(pub String);
+pub struct IdExpr(pub String, pub Info);
 
 #[derive(Debug, Clone, Copy)]
-pub struct IntegerExpr(pub i64);
+pub struct IntegerExpr(pub i64, pub Info);

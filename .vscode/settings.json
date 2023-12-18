@@ -18,6 +18,7 @@
     "Squr",
     "unsync",
     "uper",
+    "upvalue",
     "VKEY"
   ],
   "rust-analyzer.check.command": "clippy",

@@ -10,12 +10,18 @@ pub trait LexerIterator {
   fn peek(&mut self) -> Option<&Self::Item>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Lexer<'a> {
   source: Peekable<Chars<'a>>,
   ahead: Option<Token>,
   pub(super) line_num: usize,
   pub(super) col_num: usize,
+}
+
+impl<'a> std::convert::AsRef<Lexer<'a>> for Lexer<'a> {
+  fn as_ref(&self) -> &Lexer<'a> {
+    self
+  }
 }
 
 impl<'a> Iterator for Lexer<'a> {

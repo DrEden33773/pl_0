@@ -1,8 +1,8 @@
-use crate::{bytecode::advanced::TraceableByteCode, value::Value};
+use crate::{bytecode::advanced::ByteCode, value::Value};
 
-pub(super) type FnBc2u8 = fn(u8, u8) -> TraceableByteCode;
-pub(super) type FnBc3u8 = fn(u8, u8, u8) -> TraceableByteCode;
-pub(super) type FnBcBool = fn(u8, u8, bool) -> TraceableByteCode;
+pub(super) type FnBc2u8 = fn(u8, u8) -> ByteCode;
+pub(super) type FnBc3u8 = fn(u8, u8, u8) -> ByteCode;
+pub(super) type FnBcBool = fn(u8, u8, bool) -> ByteCode;
 
 /// Expression description, inner layer between source code and byte code
 #[derive(Debug, PartialEq, Clone)]
@@ -15,10 +15,17 @@ pub(super) enum ExprDesc {
   Local(usize),
   UpValue(usize),
 
-  // Closure Call
+  // function Call
+  Function(usize),
   Closure(usize),
   Call(usize, usize),
   VarArgs,
+
+  // table index
+  Index(usize, usize),
+  IndexField(usize, usize),
+  IndexInt(usize, u8),
+  IndexUpField(usize, usize), // covers global variables
 
   // Arithmetic Operators
   UnaryOp {
@@ -62,7 +69,7 @@ pub struct ActivationRecord {
   pub(super) n_param: usize,
   pub(super) constants: Vec<Value>,
   pub(super) up_indexes: Vec<UpIndex>,
-  pub(super) byte_codes: Vec<TraceableByteCode>,
+  pub(super) byte_codes: Vec<ByteCode>,
 }
 
 /// Level of inner functions, used for matching up_value

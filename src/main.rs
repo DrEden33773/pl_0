@@ -1,5 +1,5 @@
 use once_cell::sync::Lazy;
-use pl_0::{codegen::TreeWalkCodeGenerator, optimizer::AstOptimizer, parser::Parser};
+use pl_0::{optimizer::AstOptimizer, parser::Parser};
 use project_root::get_project_root;
 use std::{env::args, fs::File, io::Read};
 
@@ -7,6 +7,7 @@ static ARGS: Lazy<Vec<String>> = Lazy::new(|| args().collect::<Vec<_>>());
 static PROJECT_ROOT: Lazy<String> =
   Lazy::new(|| get_project_root().unwrap().to_str().unwrap().to_string());
 
+#[allow(unused)]
 fn compile_from_file(src: &str) {
   let mut string_buf = String::new();
   File::open(src)
@@ -17,7 +18,7 @@ fn compile_from_file(src: &str) {
   parser.parse();
   parser.show_ast();
   let optimizer = AstOptimizer::new(parser.take_ast_entry());
-  let mut code_generator = TreeWalkCodeGenerator::new(&string_buf, optimizer.optimize());
+  let ast_entry = optimizer.optimize();
 }
 
 fn main() {

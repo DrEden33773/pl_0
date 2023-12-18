@@ -1,7 +1,11 @@
-use crate::value::Value;
+use std::{cell::RefCell, rc::Rc};
+
+use crate::value::{Table, Value};
+
+use super::lib::io::{lib_read, lib_write};
 
 pub struct VMFrame {
-  /// Data stack (hold `i64` data)
+  /// Data stack (hold `Value` data)
   stack: Vec<Value>,
   /// Stack base of current field/function
   base: usize,
@@ -16,7 +20,7 @@ impl<'a> VMFrame {
     (&self.stack[self.base + i - 1]).into()
   }
 
-  pub fn set(&mut self, i: usize, v: impl Into<Value>) {
+  pub fn set<T: Into<Value>>(&mut self, i: usize, v: T) {
     self.stack[self.base + i - 1] = v.into();
   }
 
@@ -27,9 +31,17 @@ impl<'a> VMFrame {
 
 impl VMFrame {
   pub fn new() -> Self {
+    let array = vec![];
+    let table = vec![
+      ("write".into(), Value::RustFunction(lib_write)),
+      ("read".into(), Value::RustFunction(lib_read)),
+    ]
+    .into_iter()
+    .collect();
+    let env = Table::new_with(array, table);
     Self {
-      stack: vec![Value::Nil], // unused entry function
-      base: 1,                 // always equals to entry function, even not used
+      stack: vec![().into(), Rc::new(RefCell::new(env)).into()], // unused entry function & `ENV` table
+      base: 1, // always equals to entry function, even not used
     }
   }
 }
