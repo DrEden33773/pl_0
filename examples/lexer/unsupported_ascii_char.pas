@@ -1,5 +1,6 @@
 program UnsupportedAsciiChar;
-  var a;
+  var a, b;
 begin
-  a @ 1
+  a @ 1;
+  b @ 2
 end

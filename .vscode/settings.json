@@ -11,6 +11,7 @@
     "Idiv",
     "NARRAY",
     "NMAP",
+    "pcode",
     "procs",
     "Proto",
     "rint",

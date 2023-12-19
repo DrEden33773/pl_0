@@ -3,9 +3,9 @@ use derive_more::From;
 
 /// - format = (line_number, colon_number)
 #[derive(Debug, Clone, Copy)]
-pub struct Info(usize, usize);
+pub struct Location(usize, usize);
 
-impl From<&Lexer<'_>> for Info {
+impl From<&Lexer<'_>> for Location {
   fn from(lexer: &Lexer<'_>) -> Self {
     Self(lexer.line_num, lexer.col_num)
   }
@@ -139,28 +139,28 @@ pub enum FactorExpr {
 
 #[derive(Debug, Clone, Copy)]
 pub enum LopExpr {
-  Eq(Info),
-  Ne(Info),
-  Lt(Info),
-  Le(Info),
-  Gt(Info),
-  Ge(Info),
+  Eq(Location),
+  Ne(Location),
+  Lt(Location),
+  Le(Location),
+  Gt(Location),
+  Ge(Location),
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum AopExpr {
-  Add(Info),
-  Sub(Info),
+  Add(Location),
+  Sub(Location),
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum MopExpr {
-  Mul(Info),
-  Div(Info),
+  Mul(Location),
+  Div(Location),
 }
 
 #[derive(Debug, Clone)]
-pub struct IdExpr(pub String, pub Info);
+pub struct IdExpr(pub String, pub Location);
 
 #[derive(Debug, Clone, Copy)]
-pub struct IntegerExpr(pub i64, pub Info);
+pub struct IntegerExpr(pub i64, pub Location);

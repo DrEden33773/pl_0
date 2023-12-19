@@ -9,6 +9,7 @@ pub mod error;
 pub mod lexer;
 pub mod optimizer;
 pub mod parser;
+pub mod pcode;
 pub mod pest_parser;
 pub mod util;
 pub mod value;
