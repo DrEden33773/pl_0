@@ -19,6 +19,7 @@
     "unsync",
     "uper",
     "upvalue",
+    "upvalues",
     "VKEY"
   ],
   "rust-analyzer.check.command": "clippy",

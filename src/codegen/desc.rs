@@ -1,4 +1,4 @@
-use crate::{bytecode::advanced::ByteCode, value::Value};
+use crate::{bytecode::advanced::ByteCode, error::compile_error::CompileError, value::Value};
 
 pub(super) type FnBc2u8 = fn(u8, u8) -> ByteCode;
 pub(super) type FnBc3u8 = fn(u8, u8, u8) -> ByteCode;
@@ -10,6 +10,8 @@ pub(super) enum ExprDesc {
   // Constants
   Nil,
   Integer(i64),
+  Boolean(bool),
+  String(String),
 
   // Variables
   Local(usize),
@@ -29,23 +31,54 @@ pub(super) enum ExprDesc {
 
   // Arithmetic Operators
   UnaryOp {
-    opcode: FnBc2u8,
+    op: FnBc2u8,
     operand: usize,
   },
   BinaryOp {
-    opcode: FnBc3u8,
+    op: FnBc3u8,
     l_operand: usize,
     r_operand: usize,
   },
 
+  // binary logical operators: 'and', 'or'
+  Test {
+    condition: Box<ExprDesc>,
+    true_list: Vec<usize>,
+    false_list: Vec<usize>,
+  },
+
   // Relational Operators
   Compare {
-    opcode: FnBcBool,
+    op: FnBcBool,
     l_operand: usize,
     r_operand: usize,
     true_list: Vec<usize>,
     false_list: Vec<usize>,
   },
+}
+
+impl From<String> for ExprDesc {
+  fn from(v: String) -> Self {
+    Self::String(v)
+  }
+}
+
+impl From<bool> for ExprDesc {
+  fn from(v: bool) -> Self {
+    Self::Boolean(v)
+  }
+}
+
+impl From<i64> for ExprDesc {
+  fn from(v: i64) -> Self {
+    Self::Integer(v)
+  }
+}
+
+impl From<()> for ExprDesc {
+  fn from(_: ()) -> Self {
+    Self::Nil
+  }
 }
 
 // see discharge_const()
@@ -78,7 +111,7 @@ pub(super) struct Level {
   /// (name, referred_as_up_value)
   pub(super) locals: Vec<(String, bool)>,
   /// (name, index_of_up_value)
-  pub(super) up_values: Vec<(String, UpIndex)>,
+  pub(super) upvalues: Vec<(String, UpIndex)>,
 }
 
 /// Mark both goto and label

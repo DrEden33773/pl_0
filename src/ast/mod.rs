@@ -1,4 +1,5 @@
 use crate::lexer::Lexer;
+use derive_more::From;
 
 /// - format = (line_number, colon_number)
 #[derive(Debug, Clone, Copy)]
@@ -8,6 +9,27 @@ impl From<&Lexer<'_>> for Info {
   fn from(lexer: &Lexer<'_>) -> Self {
     Self(lexer.line_num, lexer.col_num)
   }
+}
+
+#[derive(Debug, Clone, From)]
+pub enum AstExpr {
+  ProgramExpr(Box<ProgramExpr>),
+  BlockExpr(Box<BlockExpr>),
+  ConstDeclExpr(Box<ConstDeclExpr>),
+  ConstExpr(Box<ConstExpr>),
+  VarDeclExpr(Box<VarDeclExpr>),
+  ProcExpr(Box<ProcExpr>),
+  BodyExpr(Box<BodyExpr>),
+  StatementExpr(Box<StatementExpr>),
+  LExpExpr(Box<LExpExpr>),
+  ExpExpr(Box<ExpExpr>),
+  TermExpr(Box<TermExpr>),
+  FactorExpr(Box<FactorExpr>),
+  LopExpr(Box<LopExpr>),
+  AopExpr(Box<AopExpr>),
+  MopExpr(Box<MopExpr>),
+  IdExpr(Box<IdExpr>),
+  IntegerExpr(Box<IntegerExpr>),
 }
 
 #[derive(Debug, Clone)]
