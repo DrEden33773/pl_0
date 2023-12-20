@@ -22,8 +22,10 @@ fn compile_from_file(src: &str) {
   let optimizer = AstOptimizer::new(parser.take_ast_entry());
   let ast_entry = optimizer.optimize();
 
-  let code = Translator::default().translate(&ast_entry);
+  let mut translator = Translator::default();
+  let code = translator.translate(&ast_entry);
   code.show_pcode_list();
+  translator.show_sym_table();
 
   let mut vm = VM::new(code);
   vm.interpret();
@@ -39,13 +41,13 @@ fn main() {
 
 #[cfg(test)]
 mod dbg {
-  // use super::*;
+  use super::*;
 
-  // #[test]
-  // fn dbg() {
-  //   let filename = PROJECT_ROOT.to_string() + "/examples/correct/test.pas";
-  //   compile_from_file(&filename);
-  // }
+  #[test]
+  fn dbg() {
+    let filename = PROJECT_ROOT.to_string() + "/examples/correct/fib.pas";
+    compile_from_file(&filename);
+  }
 }
 
 #[cfg(test)]

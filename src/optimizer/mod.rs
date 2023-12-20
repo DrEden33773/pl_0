@@ -11,6 +11,7 @@ impl AstOptimizer {
     println!();
     println!("Unimplemented AstOptimizer, use the raw AST instead");
     println!("Successfully optimized the AST");
+    println!();
     self.ast_entry
   }
 }

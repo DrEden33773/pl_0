@@ -18,3 +18,4 @@ pub mod value;
 pub mod vm;
 
 pub static SEP: Lazy<String> = Lazy::new(|| "=".repeat(60));
+pub static LINE: Lazy<String> = Lazy::new(|| "-".repeat(60));

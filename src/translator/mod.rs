@@ -8,6 +8,7 @@ use crate::{
   error::error_builder::CompileErrorBuilder,
   pcode::{AllPCode, PcodeType},
   symbol_table::{sym_type::SymType, SymTable},
+  SEP,
 };
 
 #[derive(Debug, Clone)]
@@ -18,6 +19,31 @@ pub struct Translator {
   pub level: usize,
   pub addr: usize,
   pub addr_increment: usize,
+}
+
+impl Translator {
+  pub fn show_sym_table(&self) {
+    println!("Symbol Table:");
+    println!("{}", SEP.as_str());
+    println!(
+      "{:>10} | {:<6} | {:<4} | {:<6} | {:<4} | {:<4}",
+      "name", "type", "val", "level", "addr", "size"
+    );
+    println!("{}", SEP.as_str());
+    self.sym_table.table.iter().for_each(|sym| {
+      println!(
+        "{:>10} | {:<6} | {:<4} | {:<6} | {:<4} | {:<4}",
+        sym.name,
+        sym.ty.to_string(),
+        sym.val.to_string(),
+        sym.level.to_string(),
+        sym.addr.to_string(),
+        sym.size.to_string()
+      );
+    });
+    println!("{}", SEP.as_str());
+    println!();
+  }
 }
 
 impl Default for Translator {
@@ -34,10 +60,10 @@ impl Default for Translator {
 }
 
 impl Translator {
-  pub fn translate(mut self, entry: &ProgramExpr) -> AllPCode {
+  pub fn translate(&mut self, entry: &ProgramExpr) -> AllPCode {
     self.program(entry);
     if !self.has_error {
-      self.pcode
+      self.pcode.to_owned()
     } else {
       panic!("|> Errors above occurred (during `translation/codegen`), compiling stopped ... <|\n")
     }
@@ -83,7 +109,7 @@ impl Translator {
 
     // if not main
     if start != 0 {
-      // discard args (from stack)
+      // load from data_stack, to init params (in a reversed order)
       for i in 0..self.sym_table.table[pos].size {
         self.pcode.gen(
           PcodeType::STO,
@@ -153,7 +179,7 @@ impl Translator {
 
     // procs
     for proc_expr in &expr.procs {
-      self.level -= 1; // same level, so sub 1 ahead, add 1 later
+      self.level -= 1;
       self.procedure(proc_expr);
     }
   }
@@ -477,7 +503,7 @@ impl Translator {
                   "`{}` has an non-r-value type `procedure` (only `var` or `const` appears after `:=`)",
                    id
                 ))
-                .build()  
+                .build()
                 .show();
             }
           }
