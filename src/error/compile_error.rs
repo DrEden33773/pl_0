@@ -32,6 +32,10 @@ impl CompileError {
   pub fn show(&self) {
     println!("{}", self)
   }
+
+  pub fn panic(&self) {
+    panic!("{}", self)
+  }
 }
 
 #[allow(dead_code)]
