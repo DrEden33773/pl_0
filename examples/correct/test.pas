@@ -1,9 +1,9 @@
 program Test;
   const a := 5;
-  var j, sum, x;
+  var j, sum, x; // 1, _, 10
 
-  procedure Clojure(x);
-    var j;
+  procedure Clojure(x); // 6
+    var j; // 1
   begin
     j := 1;
     sum := 0;
@@ -15,7 +15,7 @@ program Test;
   end
 
 begin
-  read(x, j);
+  read(x, j); // 10, 1
   call Clojure(j + 5);
   write(j)
 end

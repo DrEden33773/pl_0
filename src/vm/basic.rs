@@ -50,7 +50,7 @@ impl VM {
     let mut base = 0;
     let mut top = 0;
     loop {
-      let inst: Pcode = self.code.pcode_list[pc];
+      let inst = self.code.pcode_list[pc];
       pc += 1;
       match inst.f {
         PcodeType::NIL => panic!("invalid instruction"),
@@ -109,7 +109,6 @@ impl VM {
           }
           14 => {
             print!("==> {}{}", self.data[top - 1], SEP);
-            // top -= 1;
           }
           15 => println!(),
           16 => {
@@ -151,10 +150,9 @@ impl VM {
         PcodeType::INT => top += inst.a as usize,
         PcodeType::JMP => pc = inst.a as usize,
         PcodeType::JPC => {
-          if self.data[top - 1] != 0 {
+          if self.data[top - 1] == 0 {
             pc = inst.a as usize
           }
-          // top -= 1;
         }
         PcodeType::RED => {
           print!("<== Please input: ");
@@ -170,10 +168,10 @@ impl VM {
             .parse::<i64>()
             .unwrap();
           self.data[self.get_base(base, inst.l) + inst.a as usize] = input;
+          top += 1;
         }
         PcodeType::WRT => {
           print!("==> {}{}", self.data[top - 1], SEP);
-          // top -= 1;
         }
       }
       if pc == 0 {

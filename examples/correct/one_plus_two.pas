@@ -7,5 +7,7 @@ begin
   c := a + b;
   write(c);
   write(c + 1);
-  if c = 3 then write(0) else write(1)
+  if c = 3 then write(1) else write(0);
+  if c = 4 then write(1) else write(0);
+  if odd (c + 1) then write(1) else write(0)
 end

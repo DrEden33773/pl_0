@@ -75,7 +75,8 @@ impl Translator {
     }
 
     // fix jmp
-    self.pcode.pcode_list[tmp_pcode_ptr].a = self.pcode.get_pcode_ptr() as i64;
+    let fixed_a = self.pcode.get_pcode_ptr() as i64;
+    self.pcode.pcode_list[tmp_pcode_ptr].set_a(fixed_a);
     // allocate
     self.pcode.gen(PcodeType::INT, 0, self.addr as i64);
     // if not main
@@ -94,10 +95,12 @@ impl Translator {
 
   fn procedure(&mut self, expr: &ProcExpr) {
     // tmp
-    let mut arg_count = 0;
+    let mut args_count = 0;
 
     // name
     let name = expr.id.as_ref().0.to_owned();
+
+    // duplicate-definition
     if self.sym_table.is_now_exists(&name, self.level) {
       self.has_error = true;
       todo!("Error: {} is defined before", name);
@@ -115,8 +118,8 @@ impl Translator {
       // +3 :: DL - SL - RA
       self.sym_table.load_var(&id, self.level, self.addr + 3);
       self.addr += self.addr_increment;
-      arg_count += 1;
-      self.sym_table.table[proc_pos].set_size(arg_count);
+      args_count += 1;
+      self.sym_table.table[proc_pos].set_size(args_count);
     }
 
     // block
@@ -159,6 +162,8 @@ impl Translator {
 
         // eval expression
         self.exp(exp);
+
+        // STO (store)
         self.pcode.gen(
           PcodeType::STO,
           self.level - tmp_sym.level,
@@ -175,7 +180,7 @@ impl Translator {
 
         // then
         let pos1 = self.pcode.get_pcode_ptr();
-        self.pcode.gen(PcodeType::JMP, 0, 0);
+        self.pcode.gen(PcodeType::JPC, 0, 0);
         self.statement(then_statement);
         let pos2 = self.pcode.get_pcode_ptr();
         self.pcode.gen(PcodeType::JMP, 0, 0);
@@ -205,7 +210,7 @@ impl Translator {
         self.pcode.pcode_list[pos2].set_a(fixed_a);
       }
       StatementExpr::Call { id, args } => {
-        let n_arg = args.len();
+        let n_args = args.len();
         let name = id.as_ref().0.to_owned();
 
         // undefined
@@ -222,8 +227,8 @@ impl Translator {
           todo!("Error: {} is not `proc`", name);
           return;
         }
-        // unmatchable n_arg
-        if tmp_sym.size != n_arg {
+        // unmatchable n_args
+        if tmp_sym.size != n_args {
           self.has_error = true;
           todo!("Error: {}'s args is not matched", name);
           return;
@@ -243,17 +248,22 @@ impl Translator {
       StatementExpr::Read { id_list } => {
         for id in id_list {
           let name = id.as_ref().0.to_owned();
+
+          // undefined
           if !self.sym_table.is_pre_exists(&name, self.level) {
             self.has_error = true;
             todo!("Error: {} is not defined", name);
             return;
           }
+
           let tmp_sym = self.sym_table.find_symbol(&name).to_owned();
+          // read to non-var
           if !matches!(tmp_sym.ty, SymType::Var) {
             self.has_error = true;
             todo!("Error: {} is not `var`", name);
             return;
           }
+
           self.pcode.gen(PcodeType::OPR, 0, 16);
           // must gen SPO, because `read` will change sp
           self.pcode.gen(
@@ -327,7 +337,6 @@ impl Translator {
         }
       }
       LExpExpr::Odd { exp } => {
-        // TODO: figure out the witch should be executed first
         self.exp(exp);
         self.pcode.gen(PcodeType::OPR, 0, 6);
       }
@@ -374,16 +383,16 @@ impl Translator {
       FactorExpr::Id(expr) => {
         let id = expr.0.to_owned();
         if self.sym_table.is_pre_exists(&id, self.level) {
-          let tmp_row = self.sym_table.try_find_symbol(&id).unwrap();
-          match tmp_row.ty {
+          let tmp_sym = self.sym_table.find_symbol(&id);
+          match tmp_sym.ty {
             SymType::Nil => todo!("Error: {} is not `const` / `var`", id),
-            SymType::Const => self.pcode.gen(PcodeType::LIT, 0, tmp_row.val),
+            SymType::Const => self.pcode.gen(PcodeType::LIT, 0, tmp_sym.val),
             SymType::Var => {
-              debug_assert!(self.level >= tmp_row.level);
+              assert!(self.level >= tmp_sym.level);
               self.pcode.gen(
                 PcodeType::LOD,
-                self.level - tmp_row.level,
-                tmp_row.addr as i64,
+                self.level - tmp_sym.level,
+                tmp_sym.addr as i64,
               )
             }
             SymType::Proc => todo!("Error: {} is not `const` / `var`", id),

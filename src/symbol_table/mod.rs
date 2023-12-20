@@ -17,7 +17,7 @@ impl SymTable {
   }
 
   pub fn try_find_symbol(&self, name: &str) -> Option<&TableRow> {
-    self.table.iter().find(|&row| row.name == name)
+    self.table.iter().find(|&sym| sym.name == name)
   }
 
   pub fn find_symbol(&self, name: &str) -> &TableRow {
@@ -42,8 +42,8 @@ impl SymTable {
   }
 
   pub fn is_pre_exists(&self, name: &str, level: usize) -> bool {
-    for row in &self.table {
-      if row.name == name && row.level <= level {
+    for sym in &self.table {
+      if sym.name == name && sym.level <= level {
         return true;
       }
     }
@@ -51,8 +51,8 @@ impl SymTable {
   }
 
   pub fn is_now_exists(&self, name: &str, level: usize) -> bool {
-    for row in &self.table {
-      if row.name == name && row.level == level {
+    for sym in &self.table {
+      if sym.name == name && sym.level == level {
         return true;
       }
     }
@@ -65,7 +65,7 @@ impl SymTable {
       val,
       level,
       addr,
-      size: 4,
+      size: 0,
       name: name.to_string(),
     };
     self.table.push(value);
