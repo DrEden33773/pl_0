@@ -7,5 +7,5 @@ begin
   c := a + b;
   write(c);
   write(c + 1);
-  if c <> 3 then write(0) else write(1)
+  if c = 3 then write(0) else write(1)
 end

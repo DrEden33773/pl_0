@@ -28,6 +28,12 @@ pub struct CompileError {
   pub error_type: CompileErrorType,
 }
 
+impl CompileError {
+  pub fn show(&self) {
+    println!("{}", self)
+  }
+}
+
 #[allow(dead_code)]
 impl CompileError {
   pub fn lexical_error_template() -> Self {

@@ -524,6 +524,7 @@ fn chunk<T: Into<AstExpr> + Clone>(
   };
 
   // generate
+  todo!();
 
   // clear
   let TreeWalkCodeGenerator { mut ar, ctx, .. } = generator;

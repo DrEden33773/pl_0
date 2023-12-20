@@ -1,5 +1,5 @@
 use once_cell::sync::Lazy;
-use pl_0::{optimizer::AstOptimizer, parser::Parser};
+use pl_0::{optimizer::AstOptimizer, parser::Parser, translator::Translator, vm::basic::VM};
 use project_root::get_project_root;
 use std::{env::args, fs::File, io::Read};
 
@@ -14,11 +14,19 @@ fn compile_from_file(src: &str) {
     .unwrap()
     .read_to_string(&mut string_buf)
     .unwrap();
+
   let mut parser = Parser::new(&string_buf);
   parser.parse();
-  parser.show_ast();
+  // parser.show_ast();
+
   let optimizer = AstOptimizer::new(parser.take_ast_entry());
   let ast_entry = optimizer.optimize();
+
+  let code = Translator::default().translate(&ast_entry);
+  code.show_pcode_list();
+
+  let mut vm = VM::new(code);
+  vm.interpret();
 }
 
 fn main() {

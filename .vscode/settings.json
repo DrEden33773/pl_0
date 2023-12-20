@@ -13,6 +13,7 @@
     "NMAP",
     "pcode",
     "procs",
+    "propos",
     "Proto",
     "rint",
     "rlox",
@@ -24,5 +25,21 @@
     "VKEY"
   ],
   "rust-analyzer.check.command": "clippy",
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": "comment.line.double-slash.rust-analyzer",
+        "settings": {
+          "foreground": "#90EE90"
+        }
+      },
+      {
+        "scope": "comment.line.triple-slash.rust-analyzer",
+        "settings": {
+          "foreground": "#90EE90"
+        }
+      }
+    ]
+  }
 }

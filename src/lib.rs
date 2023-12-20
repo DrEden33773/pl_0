@@ -11,6 +11,8 @@ pub mod optimizer;
 pub mod parser;
 pub mod pcode;
 pub mod pest_parser;
+pub mod symbol_table;
+pub mod translator;
 pub mod util;
 pub mod value;
 pub mod vm;
