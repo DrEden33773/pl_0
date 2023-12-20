@@ -72,6 +72,8 @@ impl Translator {
     }
     if let Some(expr) = &expr.proc {
       self.procedure(expr);
+      // retract level back after exit a proc
+      self.level -= 1;
     }
 
     // fix jmp
@@ -112,7 +114,7 @@ impl Translator {
     self.addr += self.addr_increment;
     self.level += 1; // update level
 
-    // args
+    // args (if any)
     for arg in &expr.args {
       let id = arg.as_ref().0.to_owned();
       // +3 :: DL - SL - RA
@@ -153,7 +155,10 @@ impl Translator {
         }
 
         // assign to non-var
-        let tmp_sym = self.sym_table.find_symbol(&name).to_owned();
+        let tmp_sym = self
+          .sym_table
+          .find_closest_sym(&name, self.level)
+          .to_owned();
         if !matches!(tmp_sym.ty, SymType::Var) {
           self.has_error = true;
           todo!("Error: {} is not `var`", name);
@@ -220,7 +225,10 @@ impl Translator {
           return;
         }
 
-        let tmp_sym = self.sym_table.find_symbol(&name).to_owned();
+        let tmp_sym = self
+          .sym_table
+          .find_closest_sym(&name, self.level)
+          .to_owned();
         // call non-proc
         if !matches!(tmp_sym.ty, SymType::Proc) {
           self.has_error = true;
@@ -256,7 +264,10 @@ impl Translator {
             return;
           }
 
-          let tmp_sym = self.sym_table.find_symbol(&name).to_owned();
+          let tmp_sym = self
+            .sym_table
+            .find_closest_sym(&name, self.level)
+            .to_owned();
           // read to non-var
           if !matches!(tmp_sym.ty, SymType::Var) {
             self.has_error = true;
@@ -310,12 +321,13 @@ impl Translator {
       let id = id.as_ref().0.to_owned();
       if self.sym_table.is_now_exists(&id, self.level) {
         self.has_error = true;
-        todo!("Error: {} is defined before", id)
+        todo!("Error: {} is defined before", id);
+        continue;
       } else {
         self.sym_table.load_var(&id, self.level, self.addr);
+        // update addr
+        self.addr += self.addr_increment;
       }
-      // update addr
-      self.addr += self.addr_increment;
     }
   }
 }
@@ -383,7 +395,7 @@ impl Translator {
       FactorExpr::Id(expr) => {
         let id = expr.0.to_owned();
         if self.sym_table.is_pre_exists(&id, self.level) {
-          let tmp_sym = self.sym_table.find_symbol(&id);
+          let tmp_sym = self.sym_table.find_closest_sym(&id, self.level);
           match tmp_sym.ty {
             SymType::Nil => todo!("Error: {} is not `const` / `var`", id),
             SymType::Const => self.pcode.gen(PcodeType::LIT, 0, tmp_sym.val),

@@ -3,8 +3,6 @@ use self::{sym_type::SymType, table_row::TableRow};
 pub mod sym_type;
 pub mod table_row;
 
-pub const SYM_TABLE_MAX_LEN: usize = 10000;
-
 #[derive(Debug, Clone, Default)]
 pub struct SymTable {
   pub table: Vec<TableRow>,
@@ -12,24 +10,21 @@ pub struct SymTable {
 }
 
 impl SymTable {
-  pub fn get_symbol(&self, i: usize) -> &TableRow {
-    &self.table[i]
+  pub fn try_find_closest_sym(&self, name: &str, curr_level: usize) -> Option<&TableRow> {
+    // must `rev()`
+    //
+    // you should find a symbol with as higher level as you can
+    //
+    // higher level's symbol always appears later in the linear table
+    self
+      .table
+      .iter()
+      .rev()
+      .find(|&sym| sym.name == name && sym.level <= curr_level)
   }
 
-  pub fn try_find_symbol(&self, name: &str) -> Option<&TableRow> {
-    self.table.iter().find(|&sym| sym.name == name)
-  }
-
-  pub fn find_symbol(&self, name: &str) -> &TableRow {
-    self.try_find_symbol(name).unwrap()
-  }
-
-  pub fn get_symbol_mut(&mut self, i: usize) -> &mut TableRow {
-    &mut self.table[i]
-  }
-
-  pub fn get_row_index(&self, name: &str) -> Option<usize> {
-    (0..self.table.len()).find(|&i| self.table[i].name == name)
+  pub fn find_closest_sym(&self, name: &str, curr_level: usize) -> &TableRow {
+    self.try_find_closest_sym(name, curr_level).unwrap()
   }
 
   pub fn get_proc_in_curr_level(&self) -> Option<usize> {

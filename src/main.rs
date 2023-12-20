@@ -38,6 +38,17 @@ fn main() {
 }
 
 #[cfg(test)]
+mod dbg {
+  use super::*;
+
+  #[test]
+  fn dbg() {
+    let filename = PROJECT_ROOT.to_string() + "/examples/correct/test.pas";
+    compile_from_file(&filename);
+  }
+}
+
+#[cfg(test)]
 mod demo {
   use super::*;
   use pl_0::lexer::Lexer;

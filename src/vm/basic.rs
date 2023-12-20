@@ -108,7 +108,7 @@ impl VM {
             self.data[top - 1] = (self.data[top - 1] <= self.data[top]) as i64;
           }
           14 => {
-            print!("==> {}{}", self.data[top - 1], SEP);
+            print!("{}{}", self.data[top - 1], SEP);
           }
           15 => println!(),
           16 => {
@@ -171,7 +171,7 @@ impl VM {
           top += 1;
         }
         PcodeType::WRT => {
-          print!("==> {}{}", self.data[top - 1], SEP);
+          print!("{}{}", self.data[top - 1], SEP);
         }
       }
       if pc == 0 {
