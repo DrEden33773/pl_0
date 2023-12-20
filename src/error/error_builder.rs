@@ -1,4 +1,4 @@
-use crate::lexer::Lexer;
+use crate::{ast::Location, lexer::Lexer};
 
 use super::compile_error::{CompileError, CompileErrorType};
 
@@ -8,6 +8,14 @@ pub struct CompileErrorBuilder {
   col: Option<usize>,
   info: Option<String>,
   error_type: Option<CompileErrorType>,
+}
+
+impl From<Location> for CompileErrorBuilder {
+  fn from(value: Location) -> Self {
+    CompileErrorBuilder::semantic_error_template()
+      .with_line(value.0)
+      .with_col(value.1)
+  }
 }
 
 impl CompileErrorBuilder {

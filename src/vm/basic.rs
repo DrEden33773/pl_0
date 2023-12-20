@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use crate::pcode::{AllPCode, Pcode, PcodeType};
+use crate::pcode::{AllPCode, PcodeType};
 
 const STACK_SIZE: usize = 4096;
 const SEP: &str = "  ";

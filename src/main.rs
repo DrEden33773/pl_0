@@ -39,13 +39,13 @@ fn main() {
 
 #[cfg(test)]
 mod dbg {
-  use super::*;
+  // use super::*;
 
-  #[test]
-  fn dbg() {
-    let filename = PROJECT_ROOT.to_string() + "/examples/correct/test.pas";
-    compile_from_file(&filename);
-  }
+  // #[test]
+  // fn dbg() {
+  //   let filename = PROJECT_ROOT.to_string() + "/examples/correct/test.pas";
+  //   compile_from_file(&filename);
+  // }
 }
 
 #[cfg(test)]

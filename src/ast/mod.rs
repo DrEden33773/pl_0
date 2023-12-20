@@ -3,7 +3,7 @@ use derive_more::From;
 
 /// - format = (line_number, colon_number)
 #[derive(Debug, Clone, Copy)]
-pub struct Location(usize, usize);
+pub struct Location(pub usize, pub usize);
 
 impl From<&Lexer<'_>> for Location {
   fn from(lexer: &Lexer<'_>) -> Self {

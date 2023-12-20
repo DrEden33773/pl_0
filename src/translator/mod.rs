@@ -5,6 +5,7 @@ use crate::{
     AopExpr, BlockExpr, BodyExpr, ConstDeclExpr, ConstExpr, ExpExpr, FactorExpr, LExpExpr, LopExpr,
     MopExpr, ProcExpr, ProgramExpr, StatementExpr, TermExpr, VarDeclExpr,
   },
+  error::error_builder::CompileErrorBuilder,
   pcode::{AllPCode, PcodeType},
   symbol_table::{sym_type::SymType, SymTable},
 };
@@ -50,14 +51,18 @@ impl Translator {
 
   fn block(&mut self, expr: &BlockExpr) {
     // tmp
-    let addr_cp = self.addr;
+    let old_addr = self.addr;
 
     // init curr level
     let start = self.sym_table.table_ptr;
     let mut pos = 0;
     self.addr = 3; // DL - SL - RA
-    if start > 0 {
+
+    // if not main -> deal with `n_args`
+    if start != 0 {
       pos = self.sym_table.get_proc_in_curr_level().unwrap();
+      // offer addr for args
+      self.addr += self.sym_table.table[pos].size;
     }
 
     // (jmp, 0, 0)
@@ -76,23 +81,39 @@ impl Translator {
       self.level -= 1;
     }
 
+    // if not main
+    if start != 0 {
+      // discard args (from stack)
+      for i in 0..self.sym_table.table[pos].size {
+        self.pcode.gen(
+          PcodeType::STO,
+          0,
+          (self.sym_table.table[pos].size + 3 - i) as i64,
+        );
+      }
+    }
+
     // fix jmp
     let fixed_a = self.pcode.get_pcode_ptr() as i64;
     self.pcode.pcode_list[tmp_pcode_ptr].set_a(fixed_a);
+
     // allocate
     self.pcode.gen(PcodeType::INT, 0, self.addr as i64);
+
     // if not main
     if start != 0 {
+      // set curr_proc's sym_value into curr_proc's begin pos
       let val = self.pcode.get_pcode_ptr() - 1 - self.sym_table.table[pos].size;
       self.sym_table.table[pos].set_val(val as i64);
     }
 
+    // call body
     self.body(&expr.body);
 
     // end of procedure
     self.pcode.gen(PcodeType::OPR, 0, 0);
 
-    self.addr = addr_cp;
+    self.addr = old_addr;
   }
 
   fn procedure(&mut self, expr: &ProcExpr) {
@@ -105,7 +126,10 @@ impl Translator {
     // duplicate-definition
     if self.sym_table.is_now_exists(&name, self.level) {
       self.has_error = true;
-      todo!("Error: {} is defined before", name);
+      CompileErrorBuilder::from(expr.id.as_ref().1)
+        .with_info(format!("`{}` is defined before", name))
+        .build()
+        .show();
       return;
     }
 
@@ -150,7 +174,10 @@ impl Translator {
         // undefined
         if !self.sym_table.is_pre_exists(&name, self.level) {
           self.has_error = true;
-          todo!("Error: {} is not defined", name);
+          CompileErrorBuilder::from(id.as_ref().1)
+            .with_info(format!("`{}` is undefined", name))
+            .build()
+            .show();
           return;
         }
 
@@ -161,7 +188,10 @@ impl Translator {
           .to_owned();
         if !matches!(tmp_sym.ty, SymType::Var) {
           self.has_error = true;
-          todo!("Error: {} is not `var`", name);
+          CompileErrorBuilder::from(id.as_ref().1)
+            .with_info(format!("`{}` is not a variable", name))
+            .build()
+            .show();
           return;
         }
 
@@ -221,7 +251,10 @@ impl Translator {
         // undefined
         if !self.sym_table.is_pre_exists(&name, self.level) {
           self.has_error = true;
-          todo!("Error: {} is not defined", name);
+          CompileErrorBuilder::from(id.as_ref().1)
+            .with_info(format!("`{}` is undefined", name))
+            .build()
+            .show();
           return;
         }
 
@@ -232,13 +265,22 @@ impl Translator {
         // call non-proc
         if !matches!(tmp_sym.ty, SymType::Proc) {
           self.has_error = true;
-          todo!("Error: {} is not `proc`", name);
+          CompileErrorBuilder::from(id.as_ref().1)
+            .with_info(format!("`{}` is not a procedure", name))
+            .build()
+            .show();
           return;
         }
         // unmatchable n_args
         if tmp_sym.size != n_args {
           self.has_error = true;
-          todo!("Error: {}'s args is not matched", name);
+          CompileErrorBuilder::from(id.as_ref().1)
+            .with_info(format!(
+              "`{}` expects {} args, but received {}",
+              name, tmp_sym.size, n_args
+            ))
+            .build()
+            .show();
           return;
         }
 
@@ -260,7 +302,10 @@ impl Translator {
           // undefined
           if !self.sym_table.is_pre_exists(&name, self.level) {
             self.has_error = true;
-            todo!("Error: {} is not defined", name);
+            CompileErrorBuilder::from(id.as_ref().1)
+              .with_info(format!("`{}` is undefined", name))
+              .build()
+              .show();
             return;
           }
 
@@ -271,7 +316,10 @@ impl Translator {
           // read to non-var
           if !matches!(tmp_sym.ty, SymType::Var) {
             self.has_error = true;
-            todo!("Error: {} is not `var`", name);
+            CompileErrorBuilder::from(id.as_ref().1)
+              .with_info(format!("`{}` is not a variable", name))
+              .build()
+              .show();
             return;
           }
 
@@ -307,7 +355,10 @@ impl Translator {
       let val = exp.integer.as_ref().0;
       if self.sym_table.is_now_exists(&id, self.level) {
         self.has_error = true;
-        todo!("Error: {} is defined before", id)
+        CompileErrorBuilder::from(exp.id.as_ref().1)
+          .with_info(format!("`{}` is defined before", id))
+          .build()
+          .show();
       } else {
         self.sym_table.load_const(&id, self.level, val, self.addr);
       }
@@ -317,11 +368,14 @@ impl Translator {
   fn var_decl(&mut self, expr: &VarDeclExpr) {
     let id_list = &expr.id_list;
     // for each id in id_list, you should consider the updating of addr
-    for id in id_list {
-      let id = id.as_ref().0.to_owned();
+    for id_exp in id_list {
+      let id = id_exp.as_ref().0.to_owned();
       if self.sym_table.is_now_exists(&id, self.level) {
         self.has_error = true;
-        todo!("Error: {} is defined before", id);
+        CompileErrorBuilder::from(id_exp.as_ref().1)
+          .with_info(format!("`{}` is defined before", id))
+          .build()
+          .show();
         continue;
       } else {
         self.sym_table.load_var(&id, self.level, self.addr);
@@ -397,7 +451,16 @@ impl Translator {
         if self.sym_table.is_pre_exists(&id, self.level) {
           let tmp_sym = self.sym_table.find_closest_sym(&id, self.level);
           match tmp_sym.ty {
-            SymType::Nil => todo!("Error: {} is not `const` / `var`", id),
+            SymType::Nil => {
+              self.has_error = true;
+              CompileErrorBuilder::from(expr.1)
+                .with_info(format!(
+                  "`{}` has an non-r-value type `nil` (only `var` or `const` appears after `:=`)",
+                  id
+                ))
+                .build()
+                .show();
+            }
             SymType::Const => self.pcode.gen(PcodeType::LIT, 0, tmp_sym.val),
             SymType::Var => {
               assert!(self.level >= tmp_sym.level);
@@ -407,11 +470,23 @@ impl Translator {
                 tmp_sym.addr as i64,
               )
             }
-            SymType::Proc => todo!("Error: {} is not `const` / `var`", id),
+            SymType::Proc => {
+              self.has_error = true;
+              CompileErrorBuilder::from(expr.1)
+                .with_info(format!(
+                  "`{}` has an non-r-value type `procedure` (only `var` or `const` appears after `:=`)",
+                   id
+                ))
+                .build()  
+                .show();
+            }
           }
         } else {
           self.has_error = true;
-          todo!("Error: {} is not defined", id)
+          CompileErrorBuilder::from(expr.1)
+            .with_info(format!("`{}` is undefined", id))
+            .build()
+            .show();
         }
       }
     }
