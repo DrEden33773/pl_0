@@ -72,11 +72,11 @@ impl Translator {
 
 impl Translator {
   fn program(&mut self, expr: &ProgramExpr) {
-    self.block(&expr.block, None);
+    self.block(&expr.block);
   }
 
   /// temporarily not support for non-zero-arg-proc
-  fn block(&mut self, expr: &BlockExpr, addr_after_args: Option<usize>) {
+  fn block(&mut self, expr: &BlockExpr) {
     // tmp
     let old_addr = self.addr;
 
@@ -88,6 +88,9 @@ impl Translator {
     // if not main
     if start != 0 {
       pos = self.sym_table.get_proc_in_curr_level().unwrap();
+
+      // hold the args
+      self.addr += self.sym_table.table[pos].size;
     }
 
     // (jmp, 0, 0)
@@ -98,12 +101,24 @@ impl Translator {
       self.const_decl(expr);
     }
     if let Some(expr) = &expr.var_decl {
-      self.var_decl(expr, addr_after_args);
+      self.var_decl(expr);
     }
     if let Some(expr) = &expr.proc {
       self.procedure(expr);
       // retract level back after exit a proc
       self.level -= 1;
+    }
+
+    // if not main
+    if start != 0 {
+      // use STA to load params immediately (data stack, reversed order)
+      for i in 1..=self.sym_table.table[pos].size {
+        self.pcode.gen(
+          PcodeType::STA,
+          i,
+          (3 + self.sym_table.table[pos].size - i) as i64,
+        );
+      }
     }
 
     // fix jmp
@@ -156,29 +171,13 @@ impl Translator {
     for arg in &expr.args {
       let id = arg.as_ref().0.to_owned();
       // +3 :: DL - SL - RA
-      self.sym_table.load_var(&id, self.level, self.addr + 3);
-      self.addr += self.addr_increment;
+      self.sym_table.load_var(&id, self.level, args_count + 3);
       args_count += 1;
       self.sym_table.table[proc_pos].set_size(args_count);
     }
-    let addr_after_args = Some(self.addr + 3);
-
-    if !expr.args.is_empty() {
-      let first_arg_location = expr.args.first().unwrap().as_ref().1;
-      CompileErrorBuilder::from(first_arg_location)
-        .with_info(
-          "Temporarily, procedure-with-args is not supported, this feature will be added soon"
-            .to_string(),
-        )
-        .build()
-        .show();
-      self.show_sym_table();
-      println!("Have to exit ...");
-      std::process::exit(-1);
-    }
 
     // block
-    self.block(&expr.block, addr_after_args);
+    self.block(&expr.block);
 
     // procs
     for proc_expr in &expr.procs {
@@ -394,13 +393,8 @@ impl Translator {
     }
   }
 
-  fn var_decl(&mut self, expr: &VarDeclExpr, addr_after_args: Option<usize>) {
+  fn var_decl(&mut self, expr: &VarDeclExpr) {
     let id_list = &expr.id_list;
-    let mut maybe_addr_after_args = if let Some(addr) = addr_after_args {
-      addr
-    } else {
-      self.addr
-    };
     // for each id in id_list, you should consider the updating of addr
     for id_exp in id_list {
       let id = id_exp.as_ref().0.to_owned();
@@ -412,18 +406,9 @@ impl Translator {
           .show();
         continue;
       } else {
-        self.sym_table.load_var(
-          &id,
-          self.level,
-          if addr_after_args.is_some() {
-            maybe_addr_after_args
-          } else {
-            self.addr
-          },
-        );
+        self.sym_table.load_var(&id, self.level, self.addr);
         // update addr
         self.addr += self.addr_increment;
-        maybe_addr_after_args += self.addr_increment;
       }
     }
   }

@@ -10,6 +10,7 @@ pub enum PcodeType {
   OPR,
   LOD,
   STO,
+  STA,
   CAL,
   INT,
   JMP,

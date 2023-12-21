@@ -35,7 +35,7 @@ impl<'a> Lexer<'a> {
         false => (),
       }
       let c = c.unwrap();
-      if c.is_alphabetic() {
+      if c.is_alphabetic() || c.is_ascii_digit() {
         self.next_char();
         identifier.push(c);
       } else if c == '_' {

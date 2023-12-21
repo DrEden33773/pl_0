@@ -1,27 +1,27 @@
 program NestedProc;
 
-var identifier;
+var cnt;
 
 procedure a();
   procedure aa();
   begin
-    identifier := identifier + 1;
-    write(identifier)
+    cnt := cnt + 1;
+    write(cnt)
   end
 begin
-  identifier := identifier + 1;
-  write(identifier);
+  cnt := cnt + 1;
+  write(cnt);
   call aa()
 end;
 
 procedure b();
 begin
-  identifier := identifier + 1;
-  write(identifier)
+  cnt := cnt + 1;
+  write(cnt)
 end
 
 begin
-  identifier := 3;
+  cnt := 3;
   call a();
   call b()
 end

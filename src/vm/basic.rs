@@ -13,7 +13,7 @@ const SEP: &str = "  ";
 ///
 /// - DL: Dynamic Link (old_sp)
 /// - SL: Static Link (use this to find direct outer level's DL)
-/// - RA: Return Address (next_ip)
+/// - RA: Return Address (pc)
 #[derive(Debug, Clone)]
 pub struct VM {
   data: [i64; STACK_SIZE],
@@ -35,16 +35,15 @@ impl VM {
     }
     upper_base
   }
-
   /// ## Format
   ///
   /// each data slice:
   ///
   /// (sp) > | DL | SL | RA | ... | data | (top) |
   ///
-  /// - DL: Dynamic Link (old_sp)
+  /// - DL: Dynamic Link (old_sp / base)
   /// - SL: Static Link (use this to find direct outer level's DL)
-  /// - RA: Return Address (next_ip)
+  /// - RA: Return Address (pc)
   pub fn interpret(&mut self) {
     let mut pc = 0;
     let mut base = 0;
@@ -137,10 +136,19 @@ impl VM {
           top -= 1;
           self.data[self.get_base(base, inst.l) + inst.a as usize] = self.data[top];
         }
+        PcodeType::STA => {
+          // if you've used STA, current `top` is the `base` of
+          // curr proc's data slice
+          //
+          // `top - 1` could find the latest data in caller proc
+          //
+          // `inst.l` shows how much steps back to caller's specific proc
+          self.data[top + inst.a as usize] = self.data[top - inst.l];
+        }
         PcodeType::CAL => {
-          // new: SL
-          self.data[top] = base as i64;
           // new: DL
+          self.data[top] = base as i64;
+          // new: SL
           self.data[top + 1] = self.get_base(base, inst.l) as i64;
           // new: RA(ip)
           self.data[top + 2] = pc as i64;

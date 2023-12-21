@@ -1,8 +1,8 @@
 program SimpelProc;
-procedure proc(input);
+procedure proc(input, a);
 begin
-  write(input)
+  write(input, a)
 end
 begin
-  call proc(1)
+  call proc(1, 2)
 end
