@@ -1,7 +1,5 @@
 use once_cell::sync::Lazy;
-#[cfg(test)]
-use pl_0::lexer::Lexer;
-use pl_0::{parser::Parser, pest_parser::PestParser, SEP};
+use pl_0::{optimizer::AstOptimizer, parser::Parser, translator::Translator, vm::basic::VM};
 use project_root::get_project_root;
 use std::{env::args, fs::File, io::Read};
 
@@ -15,27 +13,25 @@ fn compile_from_file(src: &str) {
     .unwrap()
     .read_to_string(&mut string_buf)
     .unwrap();
+
   let mut parser = Parser::new(&string_buf);
   parser.parse();
-  parser.show_ast();
-}
+  // parser.show_ast();
 
-#[allow(dead_code)]
-#[deprecated]
-fn compile_from_file_with_pest(src: &str) {
-  let unparsed_file = std::fs::read_to_string(src).expect("cannot read source file");
-  let ast = PestParser::parse_content(&unparsed_file);
-  println!("AST:");
-  println!("{}", SEP.as_str());
-  match ast {
-    Some(ast) => println!("{ast:?}"),
-    None => println!("None"),
-  }
+  let optimizer = AstOptimizer::new(parser.take_ast_entry());
+  let ast_entry = optimizer.optimize();
+
+  let mut translator = Translator::default();
+  let code = translator.translate(&ast_entry);
+  code.show_pcode_list();
+  translator.show_sym_table();
+
+  let mut vm = VM::new(code);
+  vm.interpret();
 }
 
 fn main() {
   if let [_, source, ..] = &ARGS[..] {
-    // compile_from_file_with_pest((PROJECT_ROOT.to_string() + source.as_str()).as_str());
     compile_from_file((PROJECT_ROOT.to_string() + source.as_str()).as_str());
   } else {
     println!("Usage: {} <source_path>", ARGS[0]);
@@ -43,8 +39,20 @@ fn main() {
 }
 
 #[cfg(test)]
+mod dbg {
+  use super::*;
+
+  #[test]
+  fn dbg() {
+    let filename = PROJECT_ROOT.to_string() + "/examples/correct/multi_arg.pas";
+    compile_from_file(&filename);
+  }
+}
+
+#[cfg(test)]
 mod demo {
   use super::*;
+  use pl_0::lexer::Lexer;
 
   fn file_to_string(filename: String) -> String {
     let mut string_buf = String::new();

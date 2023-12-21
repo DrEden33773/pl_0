@@ -24,7 +24,7 @@ impl<'a> Parser<'a> {
   /// <id> -> @letter { @letter | @digit }
   fn parse_id(&mut self) -> Option<Box<IdExpr>> {
     match self.consume_next_identifier() {
-      Ok(id) => Some(Box::new(IdExpr(id))),
+      Ok(id) => Some(Box::new(IdExpr(id, self.lexer.as_ref().into()))),
       Err(is_lexical_error) => {
         if is_lexical_error {
           while let Some(Token::LexicalError(_)) = self.lexer.peek() {
@@ -45,7 +45,7 @@ impl<'a> Parser<'a> {
   /// <integer> -> @digit { @digit }
   fn parse_integer(&mut self) -> Option<Box<IntegerExpr>> {
     match self.consume_next_integer() {
-      Ok(integer) => Some(Box::new(IntegerExpr(integer))),
+      Ok(integer) => Some(Box::new(IntegerExpr(integer, self.lexer.as_ref().into()))),
       Err(is_lexical_error) => {
         if is_lexical_error {
           while let Some(Token::LexicalError(_)) = self.lexer.peek() {
@@ -563,27 +563,27 @@ impl<'a> Parser<'a> {
       Some(token) => match token {
         Token::Eq => {
           self.lexer.next();
-          Some(Box::new(LopExpr::Eq))
+          Some(Box::new(LopExpr::Eq((&self.lexer).into())))
         }
         Token::Lt => {
           self.lexer.next();
-          Some(Box::new(LopExpr::Lt))
+          Some(Box::new(LopExpr::Lt((&self.lexer).into())))
         }
         Token::Gt => {
           self.lexer.next();
-          Some(Box::new(LopExpr::Gt))
+          Some(Box::new(LopExpr::Gt((&self.lexer).into())))
         }
         Token::Le => {
           self.lexer.next();
-          Some(Box::new(LopExpr::Le))
+          Some(Box::new(LopExpr::Le((&self.lexer).into())))
         }
         Token::Ge => {
           self.lexer.next();
-          Some(Box::new(LopExpr::Ge))
+          Some(Box::new(LopExpr::Ge((&self.lexer).into())))
         }
         Token::Ne => {
           self.lexer.next();
-          Some(Box::new(LopExpr::Ne))
+          Some(Box::new(LopExpr::Ne((&self.lexer).into())))
         }
         _ => {
           self.has_error = true;
@@ -614,7 +614,6 @@ impl<'a> Parser<'a> {
           .build();
         eprintln!("{}", err);
         self.lexer.next();
-
         None
       }
     }
@@ -625,10 +624,10 @@ impl<'a> Parser<'a> {
   fn parse_aop(&mut self) -> Option<Box<AopExpr>> {
     if self.match_next(Token::Add) {
       self.consume_next(Token::Add);
-      Some(Box::new(AopExpr::Add))
+      Some(Box::new(AopExpr::Add((&self.lexer).into())))
     } else if self.match_next(Token::Sub) {
       self.consume_next(Token::Sub);
-      Some(Box::new(AopExpr::Sub))
+      Some(Box::new(AopExpr::Sub((&self.lexer).into())))
     } else {
       self.has_error = true;
       let unexpected_t = self.lexer.peek().cloned();
@@ -659,10 +658,10 @@ impl<'a> Parser<'a> {
   fn parse_mop(&mut self) -> Option<Box<MopExpr>> {
     if self.match_next(Token::Mul) {
       self.consume_next(Token::Mul);
-      Some(Box::new(MopExpr::Mul))
+      Some(Box::new(MopExpr::Mul((&self.lexer).into())))
     } else if self.match_next(Token::Div) {
       self.consume_next(Token::Div);
-      Some(Box::new(MopExpr::Div))
+      Some(Box::new(MopExpr::Div((&self.lexer).into())))
     } else {
       self.has_error = true;
       let unexpected_t = self.lexer.peek().cloned();

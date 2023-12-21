@@ -1,3 +1,37 @@
+use crate::lexer::Lexer;
+use derive_more::From;
+
+/// - format = (line_number, colon_number)
+#[derive(Debug, Clone, Copy)]
+pub struct Location(pub usize, pub usize);
+
+impl From<&Lexer<'_>> for Location {
+  fn from(lexer: &Lexer<'_>) -> Self {
+    Self(lexer.line_num, lexer.col_num)
+  }
+}
+
+#[derive(Debug, Clone, From)]
+pub enum AstExpr {
+  ProgramExpr(Box<ProgramExpr>),
+  BlockExpr(Box<BlockExpr>),
+  ConstDeclExpr(Box<ConstDeclExpr>),
+  ConstExpr(Box<ConstExpr>),
+  VarDeclExpr(Box<VarDeclExpr>),
+  ProcExpr(Box<ProcExpr>),
+  BodyExpr(Box<BodyExpr>),
+  StatementExpr(Box<StatementExpr>),
+  LExpExpr(Box<LExpExpr>),
+  ExpExpr(Box<ExpExpr>),
+  TermExpr(Box<TermExpr>),
+  FactorExpr(Box<FactorExpr>),
+  LopExpr(Box<LopExpr>),
+  AopExpr(Box<AopExpr>),
+  MopExpr(Box<MopExpr>),
+  IdExpr(Box<IdExpr>),
+  IntegerExpr(Box<IntegerExpr>),
+}
+
 #[derive(Debug, Clone)]
 pub struct ProgramExpr {
   pub id: Box<IdExpr>,
@@ -105,28 +139,28 @@ pub enum FactorExpr {
 
 #[derive(Debug, Clone, Copy)]
 pub enum LopExpr {
-  Eq,
-  Ne,
-  Lt,
-  Le,
-  Gt,
-  Ge,
+  Eq(Location),
+  Ne(Location),
+  Lt(Location),
+  Le(Location),
+  Gt(Location),
+  Ge(Location),
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum AopExpr {
-  Add,
-  Sub,
+  Add(Location),
+  Sub(Location),
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum MopExpr {
-  Mul,
-  Div,
+  Mul(Location),
+  Div(Location),
 }
 
 #[derive(Debug, Clone)]
-pub struct IdExpr(pub String);
+pub struct IdExpr(pub String, pub Location);
 
-#[derive(Debug, Clone)]
-pub struct IntegerExpr(pub i64);
+#[derive(Debug, Clone, Copy)]
+pub struct IntegerExpr(pub i64, pub Location);

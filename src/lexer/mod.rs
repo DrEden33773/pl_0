@@ -1,9 +1,6 @@
 use self::token_def::Token;
-use crate::error::{compile_error::CompileError, error_builder::CompileErrorBuilder};
+use crate::error::error_builder::CompileErrorBuilder;
 use std::{iter::Peekable, str::Chars};
-
-#[cfg(not(feature = "debug"))]
-use std::process::exit;
 
 pub mod methods;
 pub mod token_def;
@@ -13,12 +10,18 @@ pub trait LexerIterator {
   fn peek(&mut self) -> Option<&Self::Item>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Lexer<'a> {
   source: Peekable<Chars<'a>>,
   ahead: Option<Token>,
   pub(super) line_num: usize,
   pub(super) col_num: usize,
+}
+
+impl<'a> std::convert::AsRef<Lexer<'a>> for Lexer<'a> {
+  fn as_ref(&self) -> &Lexer<'a> {
+    self
+  }
 }
 
 impl<'a> Iterator for Lexer<'a> {
@@ -45,21 +48,6 @@ impl<'a> LexerIterator for Lexer<'a> {
 }
 
 impl<'a> Lexer<'a> {
-  #[deprecated]
-  #[allow(dead_code)]
-  pub(super) fn panic_compile_error(
-    &mut self,
-    mut error_template: CompileError,
-    message: String,
-  ) -> ! {
-    error_template.line = self.line_num;
-    error_template.col = self.col_num;
-    error_template.info = message;
-    panic!("{}", error_template);
-  }
-}
-
-impl<'a> Lexer<'a> {
   fn ascii_char_handler(&mut self, c: char) -> Result<char, Token> {
     if c.is_ascii() {
       Ok(c)
@@ -75,7 +63,7 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  #[allow(dead_code)]
+  #[allow(deprecated, dead_code)]
   fn ascii_char_handler_without_skipping_lexical_error(&mut self, c: char) -> Result<char, Token> {
     if c.is_ascii() {
       Ok(c)
@@ -90,7 +78,7 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  #[allow(dead_code)]
+  #[allow(deprecated, dead_code)]
   fn read_char(&mut self) -> Result<char, Token> {
     match self.next_char() {
       Some(c) => self.ascii_char_handler(c),

@@ -2,23 +2,47 @@
   "cSpell.words": [
     "bytecodes",
     "CKEY",
+    "codegen",
     "Doub",
     "eqsign",
     "eturn",
     "falsey",
     "hile",
     "Idiv",
+    "LBAD",
+    "LBAR",
     "NARRAY",
     "NMAP",
+    "pcode",
     "procs",
+    "propos",
     "Proto",
     "rint",
     "rlox",
     "Squr",
+    "STON",
     "unsync",
     "uper",
+    "upvalue",
+    "upvalues",
     "VKEY"
   ],
   "rust-analyzer.check.command": "clippy",
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": "comment.line.double-slash.rust-analyzer",
+        "settings": {
+          "foreground": "#90EE90"
+        }
+      },
+      {
+        "scope": "comment.line.triple-slash.rust-analyzer",
+        "settings": {
+          "foreground": "#90EE90"
+        }
+      }
+    ]
+  }
 }

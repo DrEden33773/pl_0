@@ -5,6 +5,7 @@ use crate::{
   ast::ProgramExpr,
   error::error_builder::CompileErrorBuilder,
   lexer::{token_def::Token, Lexer, LexerIterator},
+  optimizer::AstOptimizer,
   parser::synchronizer::tables::TOKEN_FOLLOW_TABLE,
   SEP,
 };
@@ -14,6 +15,18 @@ pub struct Parser<'a> {
   lexer: Lexer<'a>,
   ast_entry: Option<Box<ProgramExpr>>,
   has_error: bool,
+}
+
+impl<'a> Parser<'a> {
+  pub fn take_ast_entry(self) -> Box<ProgramExpr> {
+    self.ast_entry.unwrap()
+  }
+}
+
+impl<'a> From<Parser<'a>> for AstOptimizer {
+  fn from(parser: Parser<'a>) -> Self {
+    AstOptimizer::new(parser.ast_entry.unwrap())
+  }
 }
 
 impl<'a> Parser<'a> {
@@ -74,11 +87,9 @@ impl<'a> Parser<'a> {
       eprintln!("{}", err);
       self.lexer.next();
       self.has_error = true;
-
       Err(true)
     } else if let Token::Identifier(id) = t {
       self.lexer.next();
-
       Ok(id)
     } else {
       self.has_error = true;
@@ -105,11 +116,9 @@ impl<'a> Parser<'a> {
       eprintln!("{}", err);
       self.lexer.next();
       self.has_error = true;
-
       Err(true)
     } else if let Token::Integer(num) = t {
       self.lexer.next();
-
       Ok(num)
     } else {
       self.has_error = true;
@@ -144,7 +153,7 @@ impl<'a> Parser<'a> {
   }
 
   pub fn show_ast(&mut self) -> &mut Self {
-    println!("AST:");
+    println!("AST (Abstract Syntax Tree):");
     println!("{}", SEP.as_str());
     match &self.ast_entry {
       Some(ctx) => println!("{:#?}", ctx),
