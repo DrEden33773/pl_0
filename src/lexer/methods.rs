@@ -2,7 +2,6 @@ use super::*;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 
-#[allow(dead_code)]
 static KEYWORDS: Lazy<HashMap<&str, Token>> = Lazy::new(|| {
   vec![
     ("if", Token::If),

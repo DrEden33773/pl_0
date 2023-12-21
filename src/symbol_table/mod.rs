@@ -10,21 +10,38 @@ pub struct SymTable {
 }
 
 impl SymTable {
-  pub fn try_find_closest_sym(&self, name: &str, curr_level: usize) -> Option<&TableRow> {
+  pub fn try_find_closest_sym(
+    &self,
+    name: &str,
+    curr_level: usize,
+    curr_scope_list: &[String],
+  ) -> Option<&TableRow> {
     // must `rev()`
     //
     // you should find a symbol with as higher level as you can
     //
     // higher level's symbol always appears later in the linear table
-    self
-      .table
-      .iter()
-      .rev()
-      .find(|&sym| sym.name == name && sym.level <= curr_level)
+    //
+    // another condition: sym.scope_list was totally contained by curr_scope_list
+    self.table.iter().rev().find(|&sym| {
+      sym.name == name
+        && sym.level <= curr_level
+        && sym
+          .scope_list
+          .iter()
+          .all(|scope| curr_scope_list.contains(scope))
+    })
   }
 
-  pub fn find_closest_sym(&self, name: &str, curr_level: usize) -> &TableRow {
-    self.try_find_closest_sym(name, curr_level).unwrap()
+  pub fn find_closest_sym(
+    &self,
+    name: &str,
+    curr_level: usize,
+    curr_scope_list: &[String],
+  ) -> &TableRow {
+    self
+      .try_find_closest_sym(name, curr_level, curr_scope_list)
+      .unwrap()
   }
 
   pub fn get_proc_in_curr_level(&self) -> Option<usize> {
@@ -54,7 +71,14 @@ impl SymTable {
     false
   }
 
-  pub fn load_const(&mut self, name: &str, level: usize, val: i64, addr: usize) {
+  pub fn load_const(
+    &mut self,
+    name: &str,
+    level: usize,
+    val: i64,
+    addr: usize,
+    scope_list: Vec<String>,
+  ) {
     let value = TableRow {
       ty: SymType::Const,
       val,
@@ -62,12 +86,13 @@ impl SymTable {
       addr,
       size: 0,
       name: name.to_string(),
+      scope_list,
     };
     self.table.push(value);
     self.table_ptr += 1;
   }
 
-  pub fn load_var(&mut self, name: &str, level: usize, addr: usize) {
+  pub fn load_var(&mut self, name: &str, level: usize, addr: usize, scope_list: Vec<String>) {
     let value = TableRow {
       ty: SymType::Var,
       val: 0,
@@ -75,12 +100,13 @@ impl SymTable {
       addr,
       size: 0,
       name: name.to_string(),
+      scope_list,
     };
     self.table.push(value);
     self.table_ptr += 1;
   }
 
-  pub fn load_proc(&mut self, name: &str, level: usize, addr: usize) {
+  pub fn load_proc(&mut self, name: &str, level: usize, addr: usize, scope_list: Vec<String>) {
     let value = TableRow {
       ty: SymType::Proc,
       val: 0,
@@ -88,6 +114,7 @@ impl SymTable {
       addr,
       size: 0,
       name: name.to_string(),
+      scope_list,
     };
     self.table.push(value);
     self.table_ptr += 1;

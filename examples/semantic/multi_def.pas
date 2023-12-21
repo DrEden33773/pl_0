@@ -1,6 +1,6 @@
 program MultiDef;
 
-var a, a;
+var a, a, a, a;
 
 procedure proc();
 begin

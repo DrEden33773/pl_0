@@ -1,6 +1,5 @@
 use crate::ast::ProgramExpr;
 
-#[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct AstOptimizer {
   ast_entry: Box<ProgramExpr>,

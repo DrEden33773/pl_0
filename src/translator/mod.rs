@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::{
   ast::{
     AopExpr, BlockExpr, BodyExpr, ConstDeclExpr, ConstExpr, ExpExpr, FactorExpr, LExpExpr, LopExpr,
@@ -19,6 +17,7 @@ pub struct Translator {
   pub level: usize,
   pub addr: usize,
   pub addr_increment: usize,
+  pub scope_list: Vec<String>,
 }
 
 impl Translator {
@@ -26,19 +25,20 @@ impl Translator {
     println!("Symbol Table:");
     println!("{}", SEP.as_str());
     println!(
-      "{:>10} | {:<6} | {:<4} | {:<6} | {:<4} | {:<4}",
-      "name", "type", "val", "level", "addr", "size"
+      "{:>10} | {:<6} | {:<4} | {:<6} | {:<4} | {:<4} | {:<16}",
+      "name", "type", "val", "level", "addr", "size", "scope_list"
     );
     println!("{}", SEP.as_str());
     self.sym_table.table.iter().for_each(|sym| {
       println!(
-        "{:>10} | {:<6} | {:<4} | {:<6} | {:<4} | {:<4}",
+        "{:>10} | {:<6} | {:<4} | {:<6} | {:<4} | {:<4} | {:?}",
         sym.name,
         sym.ty.to_string(),
         sym.val.to_string(),
         sym.level.to_string(),
         sym.addr.to_string(),
-        sym.size.to_string()
+        sym.size.to_string(),
+        sym.scope_list
       );
     });
     println!("{}", SEP.as_str());
@@ -55,6 +55,7 @@ impl Default for Translator {
       level: Default::default(),
       addr: Default::default(),
       addr_increment: 1,
+      scope_list: Default::default(),
     }
   }
 }
@@ -91,6 +92,8 @@ impl Translator {
 
       // hold the args
       self.addr += self.sym_table.table[pos].size;
+    } else {
+      self.scope_list.push("main".into());
     }
 
     // (jmp, 0, 0)
@@ -163,21 +166,30 @@ impl Translator {
     }
 
     let proc_pos = self.sym_table.table_ptr;
-    self.sym_table.load_proc(&name, self.level, self.addr);
+    self
+      .sym_table
+      .load_proc(&name, self.level, self.addr, self.scope_list.to_owned());
     self.addr += self.addr_increment;
     self.level += 1; // update level
+
+    self.scope_list.push(name.to_owned());
 
     // args
     for arg in &expr.args {
       let id = arg.as_ref().0.to_owned();
       // +3 :: DL - SL - RA
-      self.sym_table.load_var(&id, self.level, args_count + 3);
+      self
+        .sym_table
+        .load_var(&id, self.level, args_count + 3, self.scope_list.to_owned());
       args_count += 1;
       self.sym_table.table[proc_pos].set_size(args_count);
     }
 
     // block
     self.block(&expr.block);
+
+    // resume scope
+    self.scope_list.pop();
 
     // procs
     for proc_expr in &expr.procs {
@@ -212,7 +224,7 @@ impl Translator {
         // assign to non-var
         let tmp_sym = self
           .sym_table
-          .find_closest_sym(&name, self.level)
+          .find_closest_sym(&name, self.level, &self.scope_list)
           .to_owned();
         if !matches!(tmp_sym.ty, SymType::Var) {
           self.has_error = true;
@@ -288,7 +300,7 @@ impl Translator {
 
         let tmp_sym = self
           .sym_table
-          .find_closest_sym(&name, self.level)
+          .find_closest_sym(&name, self.level, &self.scope_list)
           .to_owned();
         // call non-proc
         if !matches!(tmp_sym.ty, SymType::Proc) {
@@ -339,7 +351,7 @@ impl Translator {
 
           let tmp_sym = self
             .sym_table
-            .find_closest_sym(&name, self.level)
+            .find_closest_sym(&name, self.level, &self.scope_list)
             .to_owned();
           // read to non-var
           if !matches!(tmp_sym.ty, SymType::Var) {
@@ -388,7 +400,9 @@ impl Translator {
           .build()
           .show();
       } else {
-        self.sym_table.load_const(&id, self.level, val, self.addr);
+        self
+          .sym_table
+          .load_const(&id, self.level, val, self.addr, self.scope_list.to_owned());
       }
     }
   }
@@ -406,7 +420,9 @@ impl Translator {
           .show();
         continue;
       } else {
-        self.sym_table.load_var(&id, self.level, self.addr);
+        self
+          .sym_table
+          .load_var(&id, self.level, self.addr, self.scope_list.to_owned());
         // update addr
         self.addr += self.addr_increment;
       }
@@ -477,7 +493,9 @@ impl Translator {
       FactorExpr::Id(expr) => {
         let id = expr.0.to_owned();
         if self.sym_table.is_pre_exists(&id, self.level) {
-          let tmp_sym = self.sym_table.find_closest_sym(&id, self.level);
+          let tmp_sym = self
+            .sym_table
+            .find_closest_sym(&id, self.level, &self.scope_list);
           match tmp_sym.ty {
             SymType::Nil => {
               self.has_error = true;

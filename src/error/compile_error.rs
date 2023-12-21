@@ -38,7 +38,6 @@ impl CompileError {
   }
 }
 
-#[allow(dead_code)]
 impl CompileError {
   pub fn lexical_error_template() -> Self {
     Self {

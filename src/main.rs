@@ -7,7 +7,6 @@ static ARGS: Lazy<Vec<String>> = Lazy::new(|| args().collect::<Vec<_>>());
 static PROJECT_ROOT: Lazy<String> =
   Lazy::new(|| get_project_root().unwrap().to_str().unwrap().to_string());
 
-#[allow(unused)]
 fn compile_from_file(src: &str) {
   let mut string_buf = String::new();
   File::open(src)

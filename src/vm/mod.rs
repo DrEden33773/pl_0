@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+#![allow(unused)]
 
 use crate::{codegen::desc::ActivationRecord, value::Value};
 use std::{cell::RefCell, rc::Rc};

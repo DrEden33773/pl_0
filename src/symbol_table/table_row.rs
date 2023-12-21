@@ -8,6 +8,7 @@ pub struct TableRow {
   pub addr: usize,
   pub size: usize,
   pub name: String,
+  pub scope_list: Vec<String>,
 }
 
 impl TableRow {

@@ -63,7 +63,7 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  #[allow(dead_code)]
+  #[allow(deprecated, dead_code)]
   fn ascii_char_handler_without_skipping_lexical_error(&mut self, c: char) -> Result<char, Token> {
     if c.is_ascii() {
       Ok(c)
@@ -78,7 +78,7 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  #[allow(dead_code)]
+  #[allow(deprecated, dead_code)]
   fn read_char(&mut self) -> Result<char, Token> {
     match self.next_char() {
       Some(c) => self.ascii_char_handler(c),
