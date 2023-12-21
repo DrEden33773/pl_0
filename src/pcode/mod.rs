@@ -66,7 +66,7 @@ impl PCodeManager {
     println!("PCode list:");
     println!("{}", SEP.as_str());
     for (i, pcode) in self.pcode_list.iter().enumerate() {
-      println!("{:4}| {:4} {:4} {:4}", i, pcode.f, pcode.l, pcode.a);
+      println!("{:4}| {:4} {:4}   {:>}", i, pcode.f, pcode.l, pcode.a);
     }
     println!("{}", SEP.as_str());
     println!();

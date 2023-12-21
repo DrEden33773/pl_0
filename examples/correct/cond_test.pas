@@ -13,5 +13,6 @@ begin
   if c <> 5 then write(1) else write(0);
   if c > 7 then write(1) else write(0);
   if c >= 0 then write(1) else write(0);
-  if c <= 10 then write(1) else write(0)
+  if c <= 10 then write(1) else write(0);
+  if c <> 0 then write(111)
 end

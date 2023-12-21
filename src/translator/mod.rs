@@ -9,9 +9,9 @@ use crate::{
   SEP,
 };
 
-/// Since `@` is an illegal character in this implementation,
+/// Since `#` is an illegal character in this implementation,
 /// we use it to represent the entry scope (instead of `main`)
-const ENTRY_SCOPE_NAME: &str = "@";
+const ENTRY_SCOPE_NAME: &str = "#";
 
 #[derive(Debug, Clone)]
 pub struct Translator {

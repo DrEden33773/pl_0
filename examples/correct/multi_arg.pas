@@ -8,7 +8,7 @@ return:=a+b+c
 end;
 procedure add1(a,b,c);
 begin
-write(111111)
+sum:=3
 end
 begin
 read(a,b,c);
