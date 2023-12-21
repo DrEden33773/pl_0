@@ -82,15 +82,15 @@ To satisfy this, 3 conditions should be met:
 
 $$
 \begin{align*}
-\text{Condition\#1} &~\dots~ \text{No \textit{left recursion pattern} detected in the \textit{grammar}} \\
-\text{Condition\#2} &~\dots~ \forall A \in V_N (A \rightarrow \alpha_1 | \alpha_2 | \dots | \alpha_n) \Rightarrow First(\alpha_i) \cap First(\alpha_j) = \Phi ~ (i \ne j) \\
-\text{Condition\#3} &~\dots~ \forall A \in V_N (\epsilon \in First(A)) \Rightarrow First(A) \cap Follow(A) = \Phi
+\text{Condition 1} &~\dots~ \text{No \textit{left recursion pattern} detected in the \textit{grammar}} \\
+\text{Condition 2} &~\dots~ \forall A \in V_N (A \rightarrow \alpha_1 | \alpha_2 | \dots | \alpha_n) \Rightarrow First(\alpha_i) \cap First(\alpha_j) = \Phi ~ (i \ne j) \\
+\text{Condition 3} &~\dots~ \forall A \in V_N (\epsilon \in First(A)) \Rightarrow First(A) \cap Follow(A) = \Phi
 \end{align*}
 $$
 
 Now, let's prove them one by one!
 
-#### Condition#1 ~ No _left recursion pattern_ detected in the _grammar_
+#### Condition 1 ~ No _left recursion pattern_ detected in the _grammar_
 
 After having a glance of the given [BNF](#bnf), we could easily prove that:
 
@@ -100,13 +100,13 @@ $$
 
 Which means that, there's no _left recursion pattern_ detected in the _grammar_.
 
-#### Condition#2
+#### Condition 2
 
 This could be easy, with the reference of [BNF](#bnf) and [first_follow_table](./src/parser/synchronizer/tables.rs)
 
-#### Condition#3
+#### Condition 3
 
-Just the same as `Condition#2`
+Just the same as `Condition 2`
 
 ## Demo
 
