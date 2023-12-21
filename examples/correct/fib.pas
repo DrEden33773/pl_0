@@ -4,7 +4,8 @@ program fibonacci;
 const index := 30;
 
 var return,i,a;
-procedure fib(a,x,t);
+
+procedure fib(a,x);
 
 var sum;
 begin
@@ -13,9 +14,9 @@ begin
     return := x
   else
     begin
-      call fib(a+1,x-1,t);
+      call fib(a+1,x-1);
       sum := sum+return;
-      call fib(a+1,x-2,t);
+      call fib(a+1,x-2);
       sum := sum+return;
       return := sum
     end
@@ -26,7 +27,7 @@ begin
   a := 2;
   while i<=index do
     begin
-      call fib(a+1,i,0);
+      call fib(a+1,i);
       write(return);
       i := i+1
     end

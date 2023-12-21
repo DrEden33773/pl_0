@@ -1,24 +1,26 @@
 program NestedProc;
+  var cnt;
 
-var cnt;
+  procedure a();
+    var cnt;
 
-procedure a();
-  procedure aa();
+    procedure aa();
+    begin
+      cnt := cnt + 1;
+      write(cnt)
+    end
+  
+  begin
+    cnt := cnt + 1;
+    write(cnt);
+    call aa()
+  end;
+
+  procedure b();
   begin
     cnt := cnt + 1;
     write(cnt)
   end
-begin
-  cnt := cnt + 1;
-  write(cnt);
-  call aa()
-end;
-
-procedure b();
-begin
-  cnt := cnt + 1;
-  write(cnt)
-end
 
 begin
   cnt := 3;

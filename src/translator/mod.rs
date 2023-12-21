@@ -4,14 +4,18 @@ use crate::{
     MopExpr, ProcExpr, ProgramExpr, StatementExpr, TermExpr, VarDeclExpr,
   },
   error::error_builder::CompileErrorBuilder,
-  pcode::{AllPCode, PcodeType},
+  pcode::{PCodeManager, PcodeType},
   symbol_table::{sym_type::SymType, SymTable},
   SEP,
 };
 
+/// Since `@` is an illegal character in this implementation,
+/// we use it to represent the entry scope (instead of `main`)
+const ENTRY_SCOPE_NAME: &str = "@";
+
 #[derive(Debug, Clone)]
 pub struct Translator {
-  pub pcode: AllPCode,
+  pub pcode: PCodeManager,
   pub sym_table: SymTable,
   pub has_error: bool,
   pub level: usize,
@@ -61,7 +65,7 @@ impl Default for Translator {
 }
 
 impl Translator {
-  pub fn translate(&mut self, entry: &ProgramExpr) -> AllPCode {
+  pub fn translate(&mut self, entry: &ProgramExpr) -> PCodeManager {
     self.program(entry);
     if !self.has_error {
       self.pcode.to_owned()
@@ -93,7 +97,7 @@ impl Translator {
       // hold the args
       self.addr += self.sym_table.table[pos].size;
     } else {
-      self.scope_list.push("main".into());
+      self.scope_list.push(ENTRY_SCOPE_NAME.into());
     }
 
     // (jmp, 0, 0)

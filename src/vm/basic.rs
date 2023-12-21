@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use crate::pcode::{AllPCode, PcodeType};
+use crate::pcode::{PCodeManager, PcodeType};
 
 const STACK_SIZE: usize = 4096;
 const SEP: &str = "  ";
@@ -17,11 +17,11 @@ const SEP: &str = "  ";
 #[derive(Debug, Clone)]
 pub struct VM {
   data: [i64; STACK_SIZE],
-  code: AllPCode,
+  code: PCodeManager,
 }
 
 impl VM {
-  pub fn new(code: AllPCode) -> Self {
+  pub fn new(code: PCodeManager) -> Self {
     Self {
       data: [0; STACK_SIZE],
       code,
@@ -193,7 +193,7 @@ impl Default for VM {
   fn default() -> Self {
     Self {
       data: [0; STACK_SIZE],
-      code: AllPCode::default(),
+      code: PCodeManager::default(),
     }
   }
 }

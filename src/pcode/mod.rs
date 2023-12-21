@@ -56,11 +56,11 @@ impl Pcode {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct AllPCode {
+pub struct PCodeManager {
   pub pcode_list: Vec<Pcode>,
 }
 
-impl AllPCode {
+impl PCodeManager {
   pub fn show_pcode_list(&self) {
     println!();
     println!("PCode list:");
@@ -77,7 +77,7 @@ impl AllPCode {
   }
 }
 
-impl AllPCode {
+impl PCodeManager {
   pub fn gen(&mut self, f: PcodeType, l: usize, a: i64) {
     self.pcode_list.push(Pcode { f, l, a });
   }
