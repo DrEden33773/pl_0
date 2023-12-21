@@ -40,6 +40,18 @@ This is a simple `Rust` implementation of `PL/0` compiler.
 <digit> -> 0 | 1 | ... | 9
 ```
 
+## Structure
+
+$$
+\text{<Source Code>} \Longrightarrow  \text{Lexer} \stackrel{Token}{\Longrightarrow} \text{Parser} \stackrel{AST}{\Longrightarrow} \text{CodeGen} \Longrightarrow \text{<PCode>} \stackrel{\textbf{VM}}{\longrightarrow} \set{\text{Result}}
+$$
+
+|  Part   |    Analysis List    |
+| :-----: | :-----------------: |
+|  Lexer  | `Lexical Analysis`  |
+| Parser  |  `Syntax Analysis`  |
+| CodeGen | `Semantic Analysis` |
+
 ## Overview
 
 ### Lexer/Tokenizer
