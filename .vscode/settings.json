@@ -9,6 +9,8 @@
     "falsey",
     "hile",
     "Idiv",
+    "LBAD",
+    "LBAR",
     "NARRAY",
     "NMAP",
     "pcode",
