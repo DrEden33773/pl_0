@@ -1,5 +1,3 @@
-#![feature(assert_matches)]
-
 use once_cell::sync::Lazy;
 
 pub mod ast;
