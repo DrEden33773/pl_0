@@ -133,11 +133,25 @@ impl Translator {
     self.pcode.pcode_list[tmp_pcode_ptr].set_a(fixed_a);
 
     // allocate
+    //
+    // right now, after `load params`, self.addr (same as data_stack.top)
+    // must be the beginning pos/index of "current procedure's data slice"
+    // `add` "3 + proc.{args & var}.count +"
+    //
+    // so, INT self.addr will move `data_stack.top` to new area of curr proc's
+    // data slice
     self.pcode.gen(PcodeType::INT, 0, self.addr as i64);
 
     // if not main
     if start != 0 {
       // set curr_proc's sym_value into curr_proc's begin pos
+      //
+      // right now, after `load params` and `increase(allocate) space`, the slice of `pcode`
+      // for current procedure's head part must be:
+      //
+      // - STA <ptr-move-back-operand> <param-relative-address>
+      // - ... (STA repeat for `curr_proc.args.count` times)
+      // - INT 0 <>
       let val = self.pcode.get_pcode_ptr() - 1 - self.sym_table.table[pos].size;
       self.sym_table.table[pos].set_val(val as i64);
     }
@@ -148,6 +162,7 @@ impl Translator {
     // end of procedure
     self.pcode.gen(PcodeType::OPR, 0, 0);
 
+    // resume addr
     self.addr = old_addr;
   }
 
@@ -197,7 +212,7 @@ impl Translator {
 
     // procs
     for proc_expr in &expr.procs {
-      self.level -= 1;
+      self.level -= 1; // end of curr proc, so level -= 1
       self.procedure(proc_expr);
     }
   }
