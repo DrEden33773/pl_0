@@ -43,7 +43,7 @@ This is a simple `Rust` implementation of `PL/0` compiler.
 ## Structure
 
 $$
-\set{\text{Source Code}} \Longrightarrow  \textbf{Lexer} \stackrel{Token}{\Longrightarrow} \textbf{Parser} \stackrel{AST}{\Longrightarrow} \text{CodeGen} \Longrightarrow \set{\text{PCode}} \longrightarrow \textbf{VM} \longrightarrow \set{\text{Result}}
+\set{Source Code} \Longrightarrow  \textbf{Lexer} \stackrel{Token}{\Longrightarrow} \textbf{Parser} \stackrel{AST}{\Longrightarrow} \textbf{CodeGen} \Longrightarrow \set{PCode} \longrightarrow \textbf{VM} \longrightarrow \set{Result}
 $$
 
 |  Part   |    Analysis List    |
