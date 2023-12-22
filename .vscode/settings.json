@@ -14,6 +14,7 @@
     "NARRAY",
     "NMAP",
     "pcode",
+    "procc",
     "procs",
     "propos",
     "Proto",
@@ -26,7 +27,8 @@
     "uper",
     "upvalue",
     "upvalues",
-    "VKEY"
+    "VKEY",
+    "wrçte"
   ],
   "rust-analyzer.check.command": "clippy",
   "editor.tabSize": 2,

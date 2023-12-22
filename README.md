@@ -120,17 +120,19 @@ This could be easy, with the reference of [BNF](#bnf) and [first_follow_table](.
 
 Just the same as `Condition 2`
 
-## Demo
+## Fibonacci Demo
 
 Source code:
 
 ```pascal
+
 program fibonacci;
 
 const index := 30;
 
 var return,i,a;
-procedure fib(a,x,t);
+
+procedure fib(a,x);
 
 var sum;
 begin
@@ -139,9 +141,9 @@ begin
     return := x
   else
     begin
-      call fib(a+1,x-1,t);
+      call fib(a+1,x-1);
       sum := sum+return;
-      call fib(a+1,x-2,t);
+      call fib(a+1,x-2);
       sum := sum+return;
       return := sum
     end
@@ -152,11 +154,12 @@ begin
   a := 2;
   while i<=index do
     begin
-      call fib(a+1,i,0);
+      call fib(a+1,i);
       write(return);
       i := i+1
     end
 end
+
 ```
 
 Result:
@@ -199,74 +202,70 @@ Result:
 - PCode
 
 ```txt
-PCode list:
+PCode List:
 ======================================================================
-   0| JMP    0   42
-   1| JMP    0    5
-   2| STA    1    5
-   3| STA    2    4
-   4| STA    3    3
-   5| INT    0    7
-   6| LIT    0    0
-   7| STO    0    6
-   8| LOD    0    4
-   9| LIT    0    2
-  10| OPR    0   10
-  11| JPC    0   15
-  12| LOD    0    4
-  13| STO    1    3
-  14| JMP    0   41
-  15| LOD    0    3
-  16| LIT    0    1
-  17| OPR    0    2
-  18| LOD    0    4
-  19| LIT    0    1
-  20| OPR    0    3
-  21| LOD    0    5
-  22| CAL    1    2
-  23| LOD    0    6
-  24| LOD    1    3
-  25| OPR    0    2
-  26| STO    0    6
-  27| LOD    0    3
-  28| LIT    0    1
-  29| OPR    0    2
-  30| LOD    0    4
-  31| LIT    0    2
-  32| OPR    0    3
-  33| LOD    0    5
-  34| CAL    1    2
-  35| LOD    0    6
-  36| LOD    1    3
-  37| OPR    0    2
-  38| STO    0    6
-  39| LOD    0    6
-  40| STO    1    3
-  41| OPR    0    0
-  42| INT    0    7
-  43| LIT    0    1
-  44| STO    0    4
-  45| LIT    0    2
-  46| STO    0    5
-  47| LOD    0    4
-  48| LIT    0   30
-  49| OPR    0   13
-  50| JPC    0   65
-  51| LOD    0    5
-  52| LIT    0    1
-  53| OPR    0    2
-  54| LOD    0    4
-  55| LIT    0    0
-  56| CAL    0    2
-  57| LOD    0    3
-  58| OPR    0   14
-  59| OPR    0   15
-  60| LOD    0    4
-  61| LIT    0    1
-  62| OPR    0    2
-  63| STO    0    4
-  64| JMP    0   47
-  65| OPR    0    0
+   0| JMP    0   39
+   1| JMP    0   4
+   2| STA    1   4
+   3| STA    2   3
+   4| INT    0   6
+   5| LIT    0   0
+   6| STO    0   5
+   7| LOD    0   4
+   8| LIT    0   2
+   9| OPR    0   10
+  10| JPC    0   14
+  11| LOD    0   4
+  12| STO    1   3
+  13| JMP    0   38
+  14| LOD    0   3
+  15| LIT    0   1
+  16| OPR    0   2
+  17| LOD    0   4
+  18| LIT    0   1
+  19| OPR    0   3
+  20| CAL    1   2
+  21| LOD    0   5
+  22| LOD    1   3
+  23| OPR    0   2
+  24| STO    0   5
+  25| LOD    0   3
+  26| LIT    0   1
+  27| OPR    0   2
+  28| LOD    0   4
+  29| LIT    0   2
+  30| OPR    0   3
+  31| CAL    1   2
+  32| LOD    0   5
+  33| LOD    1   3
+  34| OPR    0   2
+  35| STO    0   5
+  36| LOD    0   5
+  37| STO    1   3
+  38| OPR    0   0
+  39| INT    0   7
+  40| LIT    0   1
+  41| STO    0   4
+  42| LIT    0   2
+  43| STO    0   5
+  44| LOD    0   4
+  45| LIT    0   30
+  46| OPR    0   13
+  47| JPC    0   61
+  48| LOD    0   5
+  49| LIT    0   1
+  50| OPR    0   2
+  51| LOD    0   4
+  52| CAL    0   2
+  53| LOD    0   3
+  54| OPR    0   14
+  55| OPR    0   15
+  56| LOD    0   4
+  57| LIT    0   1
+  58| OPR    0   2
+  59| STO    0   4
+  60| JMP    0   44
+  61| OPR    0   0
 ======================================================================
 ```
 
@@ -277,14 +276,238 @@ Symbol Table:
 ======================================================================
       name | type   | val  | level  | addr | size | scope_list
 ======================================================================
-     index | const  | 30   | 0      | 3    | 0    | ["main"]
-    return | var    | 0    | 0      | 3    | 0    | ["main"]
-         i | var    | 0    | 0      | 4    | 0    | ["main"]
-         a | var    | 0    | 0      | 5    | 0    | ["main"]
-       fib | proc   | 2    | 0      | 6    | 3    | ["main"]
-         a | var    | 0    | 1      | 3    | 0    | ["main", "fib"]
-         x | var    | 0    | 1      | 4    | 0    | ["main", "fib"]
-         t | var    | 0    | 1      | 5    | 0    | ["main", "fib"]
-       sum | var    | 0    | 1      | 6    | 0    | ["main", "fib"]
+     index | const  | 30   | 0      | 3    | 0    | ["#"]
+    return | var    | 0    | 0      | 3    | 0    | ["#"]
+         i | var    | 0    | 0      | 4    | 0    | ["#"]
+         a | var    | 0    | 0      | 5    | 0    | ["#"]
+       fib | proc   | 2    | 0      | 6    | 2    | ["#"]
+         a | var    | 0    | 1      | 3    | 0    | ["#", "fib"]
+         x | var    | 0    | 1      | 4    | 0    | ["#", "fib"]
+       sum | var    | 0    | 1      | 5    | 0    | ["#", "fib"]
 ======================================================================
+```
+
+## Error Handling Demos
+
+As is mentioned follow, this implementation of pl/0 compiler has a complete error handling strategy, which means that it could find as many errors as possible in one run, instead of being halted by the first error.
+
+Here are some simple demos:
+
+### Syntax Error (may coexists with `Lexical Error`)
+
+- src
+
+```pascal
+program ;
+var a, b, c;
+begin
+  a    1;
+  b :=  ;
+  é : 3;
+  if 1 = 1 then
+    write(1
+  else
+    write 0);
+  write a + b + c;
+  wrçte(1)
+end
+```
+
+- console
+
+```txt
+SyntaxError{ Line: 1, Col: 9 }
+  | ~~ Expected <id> field, but not found!
+
+SyntaxError{ Line: 4, Col: 8 }
+  | ~~ Expected `:=`, but got `Integer(1)`
+
+SyntaxError{ Line: 5, Col: 9 }
+  | ~~ Expected `<id>` / `<integer>` / `(<exp>)` field, but got an unmatchable token `;`
+
+LexicalError{ Line: 6, Col: 3 }
+  | ~~ 'é' is not an ASCII character
+
+LexicalError{ Line: 6, Col: 5 }
+  | ~~ ':' is an undefined sign, did you mean ':='?
+
+SyntaxError{ Line: 6, Col: 7 }
+  | ~~ Expected `:=`, but got `Integer(3)`
+
+SyntaxError{ Line: 6, Col: 7 }
+  | ~~ Expected <statement> field, but not found!
+
+SyntaxError{ Line: 9, Col: 6 }
+  | ~~ Expected `)`, but got `Else`
+
+SyntaxError{ Line: 10, Col: 11 }
+  | ~~ Expected `(`, but got `Integer(0)`
+
+SyntaxError{ Line: 11, Col: 9 }
+  | ~~ Expected `(`, but got `Identifier("a")`
+
+SyntaxError{ Line: 11, Col: 18 }
+  | ~~ Expected `)`, but got `;`
+
+LexicalError{ Line: 12, Col: 5 }
+  | ~~ 'ç' is not an ASCII character
+
+SyntaxError{ Line: 12, Col: 7 }
+  | ~~ Expected `:=`, but got `Identifier("te")`
+
+SyntaxError{ Line: 12, Col: 7 }
+  | ~~ Expected <statement> field, but not found!
+
+thread 'main' panicked at src/parser/mod.rs:149:7:
+|> Errors above occurred (during `parsing`), compiling stopped ... <|
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+```
+
+### Semantic Error
+
+#### Duplicated Definition
+
+- src
+
+```pascal
+program MultiDef;
+
+var a, a, a, a;
+
+procedure proc();
+begin
+  write(1)
+end;
+
+procedure proc();
+begin
+  write(2)
+end
+
+begin
+  write(1)
+end
+```
+
+- console
+
+```txt
+SemanticError{ Line: 3, Col: 8 }
+  | ~~ `a` is defined before
+
+SemanticError{ Line: 3, Col: 11 }
+  | ~~ `a` is defined before
+
+SemanticError{ Line: 3, Col: 14 }
+  | ~~ `a` is defined before
+
+SemanticError{ Line: 10, Col: 14 }
+  | ~~ `proc` is defined before
+
+thread 'main' panicked at src/translator/mod.rs:116:7:
+attempt to subtract with overflow
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+```
+
+#### Undefined
+
+- src
+
+```pascal
+program undef;
+begin
+  a := 1;
+  b := 2;
+  write(c)
+end
+```
+
+- console
+
+```txt
+SemanticError{ Line: 3, Col: 3 }
+  | ~~ `a` is undefined
+
+SemanticError{ Line: 4, Col: 3 }
+  | ~~ `b` is undefined
+
+SemanticError{ Line: 5, Col: 9 }
+  | ~~ `c` is undefined
+
+thread 'main' panicked at src/translator/mod.rs:73:7:
+|> Errors above occurred (during `translation/codegen`), compiling stopped ... <|
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+```
+
+#### `args_list.length` cannot match with definition(signature)
+
+- src
+
+```pascal
+program WrongArgsListLength;
+
+var a;
+
+procedure proc();
+begin
+  write(1)
+end;
+
+procedure procc(x, t, z);
+begin
+  write(1)
+end
+
+begin
+  call proc(1, 1, 1);
+  call procc(3)
+end
+```
+
+- console
+
+```txt
+SemanticError{ Line: 16, Col: 11 }
+  | ~~ `proc` expects 0 args, but received 3
+
+SemanticError{ Line: 17, Col: 12 }
+  | ~~ `procc` expects 3 args, but received 1
+
+thread 'main' panicked at src/translator/mod.rs:73:7:
+|> Errors above occurred (during `translation/codegen`), compiling stopped ... <|
+```
+
+#### Assign to `const` / `procedure`
+
+- src
+
+```pascal
+program AssignToConstProc;
+const i := 1;
+
+procedure proc();
+begin
+  write(i)
+end
+
+begin
+  i := 16;
+  proc := 16
+end
+```
+
+- console
+
+```txt
+SemanticError{ Line: 10, Col: 3 }
+  | ~~ `i` is not a variable
+
+SemanticError{ Line: 11, Col: 6 }
+  | ~~ `proc` is not a variable
+
+thread 'main' panicked at src/translator/mod.rs:73:7:
+|> Errors above occurred (during `translation/codegen`), compiling stopped ... <|
 ```

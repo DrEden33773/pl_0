@@ -63,7 +63,7 @@ pub struct PCodeManager {
 impl PCodeManager {
   pub fn show_pcode_list(&self) {
     println!();
-    println!("PCode list:");
+    println!("PCode List:");
     println!("{}", SEP.as_str());
     for (i, pcode) in self.pcode_list.iter().enumerate() {
       println!("{:4}| {:4} {:4}   {:>}", i, pcode.f, pcode.l, pcode.a);

@@ -1,4 +1,4 @@
-program MultiDef;
+program WrongArgsListLength;
 
 var a;
 
