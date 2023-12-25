@@ -10,12 +10,7 @@ pub struct SymTable {
 }
 
 impl SymTable {
-  pub fn try_find_closest_sym(
-    &self,
-    name: &str,
-    curr_level: usize,
-    curr_scope_list: &[String],
-  ) -> Option<&TableRow> {
+  pub fn try_find_closest_sym(&self, name: &str, curr_scope_list: &[String]) -> Option<&TableRow> {
     // must `rev()`
     //
     // you should find a symbol with as higher level as you can
@@ -25,7 +20,6 @@ impl SymTable {
     // another condition: sym.scope_list was totally contained by curr_scope_list
     self.table.iter().rev().find(|&sym| {
       sym.name == name
-        && sym.level <= curr_level
         && sym
           .scope_list
           .iter()
@@ -33,15 +27,8 @@ impl SymTable {
     })
   }
 
-  pub fn find_closest_sym(
-    &self,
-    name: &str,
-    curr_level: usize,
-    curr_scope_list: &[String],
-  ) -> &TableRow {
-    self
-      .try_find_closest_sym(name, curr_level, curr_scope_list)
-      .unwrap()
+  pub fn find_closest_sym(&self, name: &str, curr_scope_list: &[String]) -> &TableRow {
+    self.try_find_closest_sym(name, curr_scope_list).unwrap()
   }
 
   pub fn get_proc_in_curr_level(&self) -> Option<usize> {
@@ -53,18 +40,23 @@ impl SymTable {
     None
   }
 
-  pub fn is_pre_exists(&self, name: &str, level: usize) -> bool {
+  pub fn is_pre_exists(&self, name: &str, curr_scope_list: &[String]) -> bool {
     for sym in &self.table {
-      if sym.name == name && sym.level <= level {
+      if sym.name == name
+        && sym
+          .scope_list
+          .iter()
+          .all(|scope| curr_scope_list.contains(scope))
+      {
         return true;
       }
     }
     false
   }
 
-  pub fn is_now_exists(&self, name: &str, level: usize) -> bool {
+  pub fn is_now_exists(&self, name: &str, curr_scope_list: &[String]) -> bool {
     for sym in &self.table {
-      if sym.name == name && sym.level == level {
+      if sym.name == name && sym.scope_list == curr_scope_list {
         return true;
       }
     }

@@ -44,7 +44,7 @@ mod dbg {
 
   #[test]
   fn dbg() {
-    let filename = PROJECT_ROOT.to_string() + "/examples/correct/nested_proc.pas";
+    let filename = PROJECT_ROOT.to_string() + "/examples/correct/multi_arg.pas";
     compile_from_file(&filename);
   }
 }

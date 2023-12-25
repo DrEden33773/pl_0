@@ -1,12 +1,8 @@
-
 program fibonacci;
-
 const index := 30;
-
 var return,i,a;
 
 procedure fib(a,x);
-
 var sum;
 begin
   sum := 0;

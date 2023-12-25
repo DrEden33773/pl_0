@@ -1,19 +1,25 @@
 program Add;
-const index:=20;
+const index := 20;
 var return,a,b,c,sum;
+
 procedure add(a,b,c);
 var sum;
 begin
-return:=a+b+c
+  write(index);
+  return := a+b+c
 end;
-procedure add1(a,b,c);
+
+procedure addClosure(a,b,c);
+const index := 1;
 begin
-sum:=3
+  write(index);
+  sum := 3
 end
+
 begin
-read(a,b,c);
-call add(b+a,a,c);
-call add1(a,b,c);
-write(return);
-write(sum)
+  read(a,b,c);
+  call add(b+a,a,c);
+  call addClosure(a,b,c);
+  write(return);
+  write(sum)
 end

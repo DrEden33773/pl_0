@@ -175,7 +175,7 @@ impl Translator {
     let name = expr.id.as_ref().0.to_owned();
 
     // duplicate-definition
-    if self.sym_table.is_now_exists(&name, self.level) {
+    if self.sym_table.is_now_exists(&name, &self.scope_list) {
       self.has_error = true;
       CompileErrorBuilder::from(expr.id.as_ref().1)
         .with_info(format!("`{}` is defined before", name))
@@ -231,7 +231,7 @@ impl Translator {
         let name = id.as_ref().0.to_owned();
 
         // undefined
-        if !self.sym_table.is_pre_exists(&name, self.level) {
+        if !self.sym_table.is_pre_exists(&name, &self.scope_list) {
           self.has_error = true;
           CompileErrorBuilder::from(id.as_ref().1)
             .with_info(format!("`{}` is undefined", name))
@@ -243,7 +243,7 @@ impl Translator {
         // assign to non-var
         let tmp_sym = self
           .sym_table
-          .find_closest_sym(&name, self.level, &self.scope_list)
+          .find_closest_sym(&name, &self.scope_list)
           .to_owned();
         if !matches!(tmp_sym.ty, SymType::Var) {
           self.has_error = true;
@@ -308,7 +308,7 @@ impl Translator {
         let name = id.as_ref().0.to_owned();
 
         // undefined
-        if !self.sym_table.is_pre_exists(&name, self.level) {
+        if !self.sym_table.is_pre_exists(&name, &self.scope_list) {
           self.has_error = true;
           CompileErrorBuilder::from(id.as_ref().1)
             .with_info(format!("`{}` is undefined", name))
@@ -319,7 +319,7 @@ impl Translator {
 
         let tmp_sym = self
           .sym_table
-          .find_closest_sym(&name, self.level, &self.scope_list)
+          .find_closest_sym(&name, &self.scope_list)
           .to_owned();
         // call non-proc
         if !matches!(tmp_sym.ty, SymType::Proc) {
@@ -359,7 +359,7 @@ impl Translator {
           let name = id.as_ref().0.to_owned();
 
           // undefined
-          if !self.sym_table.is_pre_exists(&name, self.level) {
+          if !self.sym_table.is_pre_exists(&name, &self.scope_list) {
             self.has_error = true;
             CompileErrorBuilder::from(id.as_ref().1)
               .with_info(format!("`{}` is undefined", name))
@@ -370,7 +370,7 @@ impl Translator {
 
           let tmp_sym = self
             .sym_table
-            .find_closest_sym(&name, self.level, &self.scope_list)
+            .find_closest_sym(&name, &self.scope_list)
             .to_owned();
           // read to non-var
           if !matches!(tmp_sym.ty, SymType::Var) {
@@ -405,14 +405,14 @@ impl Translator {
 
 impl Translator {
   fn const_decl(&mut self, expr: &ConstDeclExpr) {
-    self.my_const(&expr.constants);
+    self.const_decl_unfold(&expr.constants);
   }
 
-  fn my_const(&mut self, expr: &[Box<ConstExpr>]) {
+  fn const_decl_unfold(&mut self, expr: &[Box<ConstExpr>]) {
     for exp in expr {
       let id = exp.id.as_ref().0.to_owned();
       let val = exp.integer.as_ref().0;
-      if self.sym_table.is_now_exists(&id, self.level) {
+      if self.sym_table.is_now_exists(&id, &self.scope_list) {
         self.has_error = true;
         CompileErrorBuilder::from(exp.id.as_ref().1)
           .with_info(format!("`{}` is defined before", id))
@@ -431,7 +431,7 @@ impl Translator {
     // for each id in id_list, you should consider the updating of addr
     for id_exp in id_list {
       let id = id_exp.as_ref().0.to_owned();
-      if self.sym_table.is_now_exists(&id, self.level) {
+      if self.sym_table.is_now_exists(&id, &self.scope_list) {
         self.has_error = true;
         CompileErrorBuilder::from(id_exp.as_ref().1)
           .with_info(format!("`{}` is defined before", id))
@@ -511,10 +511,8 @@ impl Translator {
       FactorExpr::Exp(expr) => self.exp(expr),
       FactorExpr::Id(expr) => {
         let id = expr.0.to_owned();
-        if self.sym_table.is_pre_exists(&id, self.level) {
-          let tmp_sym = self
-            .sym_table
-            .find_closest_sym(&id, self.level, &self.scope_list);
+        if self.sym_table.is_pre_exists(&id, &self.scope_list) {
+          let tmp_sym = self.sym_table.find_closest_sym(&id, &self.scope_list);
           match tmp_sym.ty {
             SymType::Nil => {
               self.has_error = true;

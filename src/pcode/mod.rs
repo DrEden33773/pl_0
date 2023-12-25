@@ -21,19 +21,6 @@ pub enum PcodeType {
 
 impl Display for PcodeType {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    // let pcode_type = match self {
-    //   Self::NIL => "NIL",
-    //   Self::LIT => "LIT",
-    //   Self::OPR => "OPR",
-    //   Self::LOD => "LOD",
-    //   Self::STO => "STO",
-    //   Self::CAL => "CAL",
-    //   Self::INT => "INT",
-    //   Self::JMP => "JMP",
-    //   Self::JPC => "JPC",
-    //   Self::RED => "RED",
-    //   Self::WRT => "WRT",
-    // };
     write!(f, "{:?}", self)
   }
 }
