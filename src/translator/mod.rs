@@ -136,7 +136,7 @@ impl Translator {
     //
     // right now, after `load params`, self.addr (same as data_stack.top)
     // must be the beginning pos/index of "current procedure's data slice"
-    // `add` "3 + proc.{args & var}.count +"
+    // + "3 + proc.{args & var}.count"
     //
     // so, INT self.addr will move `data_stack.top` to new area of curr proc's
     // data slice
