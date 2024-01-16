@@ -16,7 +16,6 @@ fn compile_from_file(src: &str) {
 
   let mut parser = Parser::new(&string_buf);
   parser.parse();
-  // parser.show_ast();
 
   let optimizer = AstOptimizer::new(parser.take_ast_entry());
   let ast_entry = optimizer.optimize();
