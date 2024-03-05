@@ -1,7 +1,15 @@
 [package]
+description = "A simple pl/0 compiler implemented in rust."
+authors = ["Eden Wang <edwardwang33773@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/DrEden33773/pl_0"
+homepage = "https://github.com/DrEden33773/pl_0"
 name = "pl_0"
 version = "0.1.0"
 edition = "2021"
+categories = ["compilers", "parsing"]
+keywords = ["pl_0", "complier", "rust", "VM", "parser"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
