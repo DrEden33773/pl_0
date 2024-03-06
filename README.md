@@ -1,5 +1,7 @@
 # PL/0 (aka. PL_0)
 
+> ## ❤️ Please give me a `Star` / `Follow` if you like this project! ❤️
+
 ## To begin with
 
 This is the `curriculum design` of `Compiler Principle` course in `Nanjing University of Aeronautics and Astronautics` (aka. `NUAA`).
