@@ -74,7 +74,7 @@ Proof will be given later.
 
 I've adopt the welcomed `panic-mode-liked` error handling strategy for this part, to make sure that the `compiler` could find as many errors as possible in one run, instead of being halted by the first error.
 
-To make sure error could be handled in a `synchros` way, `FIRST-FOLLOW` table is a must (I've build this manually, which could be further improved by using auto-tools).
+To make sure error could be handled in a `synchronous` way, `FIRST-FOLLOW` table is a must (I've build this manually, which could be further improved by using auto-tools).
 
 ### Codegen
 
