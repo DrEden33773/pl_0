@@ -4,7 +4,8 @@
 
 ## To begin with
 
-This is the `curriculum design` of `Compiler Principle` course in `Nanjing University of Aeronautics and Astronautics` (aka. `NUAA`).
+This is the `curriculum design` of `Compiler Principle` course in `Nanjing University of Aeronautics and Astronautics` (
+aka. `NUAA`).
 
 ## Introduction
 
@@ -45,11 +46,11 @@ This is a simple `Rust` implementation of `PL/0` compiler.
 ## Structure
 
 $$
-\set{Source Code} \Longrightarrow  \textbf{Lexer} \stackrel{Token}{\Longrightarrow} \textbf{Parser} \stackrel{AST}{\Longrightarrow} \textbf{CodeGen} \Longrightarrow \set{PCode} \longrightarrow \textbf{VM} \longrightarrow \set{Result}
+\set{Source Code} \Longrightarrow \textbf{Lexer} \stackrel{Token}{\Longrightarrow} \textbf{Parser} \stackrel{AST}{\Longrightarrow} \textbf{CodeGen} \Longrightarrow \set{PCode} \longrightarrow \textbf{VM} \longrightarrow \set{Result}
 $$
 
 |  Part   |    Analysis List    |
-| :-----: | :-----------------: |
+|:-------:|:-------------------:|
 |  Lexer  | `Lexical Analysis`  |
 | Parser  |  `Syntax Analysis`  |
 | CodeGen | `Semantic Analysis` |
@@ -66,15 +67,18 @@ This part is extreme easy, I've implemented it in my own hand without using any 
 
 With the help of `Recursive Descent Algorithm`, `parser` is also not that hard to implement.
 
-However, it's necessary to prove that the given [BNF](#bnf) satisfy the definition of `LL(1)` before implementing `parser` in `Recursive Descent Algorithm`.
+However, it's necessary to prove that the given [BNF](#bnf) satisfy the definition of `LL(1)` before implementing
+`parser` in `Recursive Descent Algorithm`.
 
 Proof will be given later.
 
 ### Error Handling
 
-I've adopt the welcomed `panic-mode-liked` error handling strategy for this part, to make sure that the `compiler` could find as many errors as possible in one run, instead of being halted by the first error.
+I've adopted the welcomed `panic-mode-liked` error handling strategy for this part, to make sure that the `compiler`
+could find as many errors as possible in one run, instead of being halted by the first error.
 
-To make sure error could be handled in a `synchronous` way, `FIRST-FOLLOW` table is a must (I've build this manually, which could be further improved by using auto-tools).
+To make sure error could be handled in a `synchronous` way, `FIRST-FOLLOW` table is a must (I've built this manually,
+which could be further improved by using auto-tools).
 
 ### Codegen
 
@@ -84,7 +88,8 @@ I'm working on a `AST` to `Lua-Backend-Adapted-Representation` (LBAR) code-gener
 
 ### Virtual Machine (aka. VM / Interpreter)
 
-Sense `PCode` is the default execution result of `codegen`, the `Simple-PCode-Interpreter` is the default implementation of `Virtual Machine`
+Sense `PCode` is the default execution result of `codegen`, the `Simple-PCode-Interpreter` is the default implementation
+of `Virtual Machine`
 
 Still, I'm trying to implement a `Lua-VM-Liked-VM` for `LBAR`
 
@@ -291,7 +296,8 @@ Symbol Table:
 
 ## Error Handling Demos
 
-As is mentioned follow, this implementation of pl/0 compiler has a complete error handling strategy, which means that it could find as many errors as possible in one run, instead of being halted by the first error.
+As is mentioned follow, this implementation of pl/0 compiler has a complete error handling strategy, which means that it
+could find as many errors as possible in one run, instead of being halted by the first error.
 
 Here are some simple demos:
 
