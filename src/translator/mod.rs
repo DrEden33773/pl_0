@@ -218,8 +218,8 @@ impl Translator {
   }
 
   fn body(&mut self, expr: &BodyExpr) {
-    for e in expr.statements.iter() {
-      self.statement(e);
+    for expr in expr.statements.iter() {
+      self.statement(expr);
     }
   }
 }
